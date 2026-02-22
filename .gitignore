@@ -1,0 +1,6 @@
+cmake-build-debug/
+build/
+config.hfg
+.idea
+.vscode
+logging/
