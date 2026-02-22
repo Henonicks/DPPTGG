@@ -74,7 +74,7 @@ int16_t send_vote_info(const nlohmann::json& info_json) { // The bot will pick t
 		log("That one's unacceptable.");
 		return dpp::err_unprocessable_content;
 	}
-	int16_t const weight = type == "vote.create" ? info_json["weight"].get <int16_t>() : 1;
+	int16_t const weight = type == "vote.create" ? info_json["data"]["weight"].get <int16_t>() : 1;
 	log(fmt::format("The vote weight is {}", weight));
 	dpp::snowflake const user_id = info_json["data"]["user"]["platform_id"].get <std::string>();
 	log(fmt::format("The user ID is {}", user_id));
@@ -167,7 +167,7 @@ int main() {
 		}
 		nlohmann::json request_json;
 		try {
-			std::stringstream(request->get_request_body()) >> request_json;
+			request_json = nlohmann::json::parse(request->get_request_body());
 		}
 		catch (const nlohmann::detail::parse_error&) { // Couldn't parse the request body json
 			log(fmt::format("Couldn't parse the request body json. Sending {}.", static_cast <int>(dpp::err_forbidden)));
