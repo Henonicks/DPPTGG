@@ -20,7 +20,6 @@ Create a `config.hfg` in the root directory of the project and put this in:
 This is designed to run alongside [Guiding Light](https://github.com/Henonicks/Guiding-Light-code), which is why the dependencies may seem overkill for the task. You don't need anything that the bot doesn't require, in fact, you don't need as much if this listener is all that you want to run.
 
 * [D++](https://github.com/brainboxdotcc/DPP) 10.1.5+ (Not released as of me writing this but the current `dev` branch will suffice)
-* [fmtlib](https://github.com/fmtlib/fmt) (developed with 9.1.0)
 
 ### Building
 

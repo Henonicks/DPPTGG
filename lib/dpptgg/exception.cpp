@@ -14,13 +14,19 @@
  * limitations under the License.
 ***************************************************************************/
 
-#pragma once
 
-#include <henifig/types.hpp>
+#include "dpptgg/exception.hpp"
 
-namespace std {
-	template <typename T>
-	T get(const henifig::value_t& variant) {
-		return variant.get <T>();
+dpptgg::timestamp_exception::timestamp_exception(std::string_view const timestamp, size_t const pos) {
+	error_message = "Bad timestamp format";
+	if (!timestamp.empty()) {
+		error_message += std::string(" in `") + timestamp.data() + '`';
 	}
+	if (pos != std::string::npos) {
+		error_message += " at position " + std::to_string(pos);
+	}
+}
+
+char const* dpptgg::timestamp_exception::what() const noexcept {
+	return error_message.c_str();
 }

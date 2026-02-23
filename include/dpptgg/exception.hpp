@@ -14,29 +14,27 @@
  * limitations under the License.
 ***************************************************************************/
 
+
 #pragma once
 
-#include <vector>
-#include <variant>
-#include <tuple>
+#include <string>
+#include <exception>
 
-#include "henifig/types.hpp"
-#include "henifig/exception.hpp"
-#include "henifig/parser.hpp"
-
-namespace henifig {
-	class process_logger {
-		static bool LOG_PROCESS;
+namespace dpptgg {
+	/**
+	 * @brief Thrown when dpptgg::datetime tries to parse a timestamp that's not formatted like the top.gg ones.
+	 */
+	class timestamp_exception final : public std::exception {
+		std::string error_message;
 	public:
-		static void set_enabled(const bool& enabled) {
-			LOG_PROCESS = enabled;
-		}
-		[[nodiscard]] static bool is_enabled() {
-			return LOG_PROCESS;
-		}
-		process_logger(const process_logger&) = delete;
-		process_logger& operator=(const process_logger&) = delete;
-		process_logger(process_logger&&) = delete;
-		process_logger& operator=(process_logger&&) = delete;
+		timestamp_exception() = delete;
+
+		/**
+		 * @brief Construct a new timestamp_exception.
+		 * @param timestamp The problematic timestamp.
+		 * @param pos The position at which the issue arises.
+		 */
+		explicit timestamp_exception(std::string_view timestamp = "", size_t pos = std::string::npos);
+		char const* what() const noexcept;
 	};
 }

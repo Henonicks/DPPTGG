@@ -14,19 +14,25 @@
  * limitations under the License.
 ***************************************************************************/
 
+
 #pragma once
 
-#include <henifig/henifig.hpp>
+#include "dpptgg/exception.hpp"
 
-namespace henifig {
-	struct logger {
-		template <typename T>
-		logger& operator <<(const T& message) {
-			if (process_logger::is_enabled()) {
-				std::cout << message;
-			}
-			return *this;
-		}
+#include <cstdint>
+
+namespace dpptgg {
+	struct datetime {
+		uint16_t year{};
+		uint16_t month{};
+		uint16_t day{};
+		uint16_t hour{};
+		uint16_t minute{};
+		uint16_t second{};
+		uint32_t nanosecond{};
+		int16_t  timezone_hours{};
+		uint16_t timezone_minutes{};
+		[[nodiscard]] std::string get_timestamp() const;
+		[[nodiscard]] static datetime parse(std::string_view timestamp);
 	};
-	inline logger cout;
 }
