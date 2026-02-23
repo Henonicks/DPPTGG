@@ -50,12 +50,12 @@ ip(ip), port(port), topgg_bot_webhook_secret(topgg_bot_webhook_secret_arg), topg
 			project_platforms constexpr project_platform = pp_discord;
 
 			dpp::snowflake vote_id{};
-			int8_t vote_weight{};
+			uint8_t vote_weight{};
 			datetime created_at{};
 			datetime expires_at{};
 			if (vote_type == vt_vote_create) {
 				vote_id = payload_json["data"]["id"].get_ref <std::string&>();
-				vote_weight = static_cast <int8_t>(payload_json["data"]["weight"].get <int>());
+				vote_weight = static_cast <uint8_t>(payload_json["data"]["weight"].get <int>());
 				created_at = datetime::parse(payload_json["data"]["created_at"].get_ref <std::string&>());
 				expires_at = datetime::parse(payload_json["data"]["expires_at"].get_ref <std::string&>());
 			}
@@ -84,8 +84,8 @@ ip(ip), port(port), topgg_bot_webhook_secret(topgg_bot_webhook_secret_arg), topg
 	});
 }
 
-void dpptgg::listener::start() const {
-	this->server_cluster->start();
+void dpptgg::listener::start(dpp::start_type const return_after) const {
+	this->server_cluster->start(return_after);
 }
 
 void dpptgg::listener::shutdown() const {

@@ -37,7 +37,7 @@ namespace dpptgg {
 		dpp::snowflake vote_id;
 
 		// The weight of the vote, e.g. how many points it's worth. Set to 0 if not provided in the payload (vote_type == webhook_test).
-		int8_t vote_weight{};
+		uint8_t vote_weight{};
 
 		// Date-time of when the vote was made. Every value is set to 0 if not provided in the payload (vote_type == webhook_test).
 		datetime created_at{};
@@ -145,8 +145,9 @@ namespace dpptgg {
 
 		/**
 		 * @brief Start the underlying cluster and therefore the http_server.
+		 * @param return_after dpp::st_wait to keep running in a loop or dpp::st_return to run once and continue execution.
 		 */
-		void start() const;
+		void start(dpp::start_type return_after) const;
 
 		/**
 		 * @brief Shut down the underlying cluster and therefore the http_server.
