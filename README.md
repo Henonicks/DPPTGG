@@ -1,52 +1,67 @@
-# D++ top.gg listener
+# D++ top.gg
 
-This is a C++ program that uses the D++ library to listen to requests, handling those that come from top.gg. Whenever top.gg tells it that someone has voted for my D++ bot, [Guiding Light](https://github.com/Henonicks/Guiding-Light-code), a message is sent via a Discord webhook so the bot can pick it up and reward its users.
+DPPTGG (D++ top.gg) is a C++-17+ library that wraps around [D++](https://github.com/brainboxdotcc/DPP)'s `http_server` class, helping its user listen to webhook requests from top.gg.
 
-## Running the server
+## Setting up
 
-Create a `config.hfg` in the root directory of the project and put this in:
-
-```henifig
-/TOPGG_WEBHOOK_LISTEN_IP\ | "(string) The IP to attach the top.gg server to. 0.0.0.0 will usually work and that's what I use personally."
-/TOPGG_WEBHOOK_LISTEN_PORT\ | "(integer) The port to attach the top.gg server to."
-/TOPGG_WEBHOOK_SECRET\ | "(string) Your top.gg webhook secret. It is displayed when you create a webhook or reset its secret on the dashboard. Starts with whs"
-/TOPGG_WEBHOOK_LINK\ | "(string) Your Discord webhook link that will be used to send votes. Always needed if top.gg is enabled."
+This library uses CMake 3.15. In your CMakeLists.txt, add this subdirectory:
+```cmake
+add_subdirectory(dpptgg)
+```
+Then you need to link the library:
+```cmake
+target_link_libraries(<project name> dpptgg)
 ```
 
-## Compilation
+Now you can include the library in your code!
+
+## Running the listener
+
+First, include it:
+
+```cpp
+#include "dpptgg/topgg_listener.hpp"
+```
+
+Everything is located within the `dpptgg` namespace, including the listener. You can tie it to your `dpp::cluster` if you wish, otherwise the listener will heap-allocate one itself.
+
+If you attach the listener to a cluster while the second is running, it will instantly start listening. Otherwise, you need to start the responsible cluster with `dpptgg::listener::start()`.
+
+Here's an example utilising every feature on the surface of a listener that supports both bot and server votes:
+
+```cpp
+#include "dpptgg/topgg_listener.hpp"
+
+int main() {
+	dpp::cluster bot("Token gone, no trace, nowhere to be found. Maybe that's because there wasn't any to begin with.");
+
+	bot.on_log(dpp::utility::cout_logger()); // Cluster-specific logs are handled with this
+
+	dpptgg::listener listener("0.0.0.0", 6553, "wsh_bot", "wsh_server",
+		[](dpptgg::topgg_request const& request) {
+			std::cout << "A " << (request.project_type == dpptgg::pt_bot ? "bot" : "server") << " vote has arrived!\n";
+			std::cout << "The user's ID on Discord is: " << request.user_platform_id << std::endl;
+			// By default, the response status will be 204 (No Content) here. You are free to change it to whatever.
+		},
+		[](dpptgg::non_topgg_request const& request) {
+			std::cout << "Verification failed! Error code: " << request.status << std::endl;
+			// Refer to the dpptgg::sender_identification_statuses enum. The error has also been logged.
+		}, &bot
+	);
+
+	listener.on_log([](dpp::log_t const& log) { // If this is set, non-cluster-specific logs are handled with this, otherwise bot.on_log is used.
+		std::cout << log.message << ' ' << log.severity << std::endl;
+	});
+
+	listener.start();
+	// Starts the cluster and therefore itself.
+	
+	return 0;
+}
+```
+
+Of course, running the listener separately from a cluster is possible. In fact, you don't even need any Discord functionality at all! This is perfect for those who need to listen for votes alongside a D++ bot as this library doesn't require any additional dependencies. Speaking of...
 
 ### Dependencies
 
-This is designed to run alongside [Guiding Light](https://github.com/Henonicks/Guiding-Light-code), which is why the dependencies may seem overkill for the task. You don't need anything that the bot doesn't require, in fact, you don't need as much if this listener is all that you want to run.
-
 * [D++](https://github.com/brainboxdotcc/DPP) 10.1.5+ (Not released as of me writing this but the current `dev` branch will suffice)
-* [fmtlib](https://github.com/fmtlib/fmt) (developed with 9.1.0)
-
-### Building
-
-The program assumes it's placed inside a directory below the project's root directory. So make one:
-
-    mkdir build
-    cd build
-
-Then generate a Makefile with cmake:
-
-    cmake ..
-
-You need to run the command above every time a change is made to `CMakeLists.txt`.
-
-Now you're ready to compile:
-
-    make -j
-
-If DPP is installed in a different location you can specify the root directory to look in while running cmake
-
-    cmake .. -DCMAKE_PREFIX_PATH=<your/path>
-
-If you wish to use a non-default compiler, you can specify it while running cmake
-
-    cmake .. -DCMAKE_CXX_COMPILER=<your_compiler>
-
-## Running the server
-
-That's it! You can simply do `./topgg_listener` and that will launch the listener.

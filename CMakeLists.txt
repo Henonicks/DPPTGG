@@ -1,20 +1,20 @@
+# From https://github.com/brainboxdotcc/templatebot (slightly modified)
+
 cmake_minimum_required (VERSION 3.15)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(BOT_NAME "topgg_listener")
+set(PROJECT_NAME "dpptgg")
 
-project(${BOT_NAME})
-aux_source_directory("src" coresrc)
-add_executable(${BOT_NAME} ${coresrc})
-
-target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
+project(${PROJECT_NAME})
+aux_source_directory("lib/dpptgg" coresrc)
+add_library(${PROJECT_NAME} ${coresrc})
 
 string(ASCII 27 Esc)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set_target_properties(${BOT_NAME} PROPERTIES
-    CXX_STANDARD 20
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
@@ -36,25 +36,21 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
     set(DL_LIBRARY dl)
 endif()
 
-target_include_directories(${BOT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${OPENSSL_INCLUDE_DIR}
 )
 
-add_subdirectory(Henifig)
-
-target_link_libraries(${BOT_NAME}
+target_link_libraries(${PROJECT_NAME}
     ${DL_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_CRYPTO_LIBRARY}
     ${OPENSSL_SSL_LIBRARY}
-    henifig
 )
 
-message(STATUS ${DPP_LIBRARIES})
-
 if (DPP_FOUND)
-    target_link_libraries(${BOT_NAME} ${DPP_LIBRARIES})
-    target_include_directories(${BOT_NAME} PUBLIC ${DPP_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME} ${DPP_LIBRARIES})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${DPP_INCLUDE_DIR})
 else()
     find_package(Git)
     message(WARNING "Could not find DPP install. Building from source instead.")
@@ -66,7 +62,7 @@ else()
             message(FATAL_ERROR "Failed to update the D++ submodule. Code: ${RESULT}.")
         else()
             add_subdirectory(DPP)
-            target_link_libraries(${BOT_NAME} dpp)
+            target_link_libraries(${PROJECT_NAME} dpp)
         endif()
     else()
         message(FATAL_ERROR "Failed to find the git executable. Can't update the D++ submodule.")
