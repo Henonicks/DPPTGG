@@ -145,9 +145,9 @@ namespace dpptgg {
 
 		/**
 		 * @brief Start the underlying cluster and therefore the http_server.
-		 * @param return_after dpp::st_wait to keep running in a loop or dpp::st_return to run once and continue execution.
+		 * @param return_after dpp::st_wait (the default) to keep running in a loop or dpp::st_return to run once and continue execution.
 		 */
-		void start(dpp::start_type return_after) const;
+		void start(dpp::start_type return_after = dpp::st_wait) const;
 
 		/**
 		 * @brief Shut down the underlying cluster and therefore the http_server.
