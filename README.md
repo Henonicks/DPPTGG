@@ -1,4 +1,6 @@
-# D++ top.gg
+<div style="text-align: center;"><h1>D++ top.gg</h1></div>
+
+<div style="text-align: center;"><img src="https://henonicks.tuxifan.net/dpptgg/dpptgg_md.png" alt="DPPTGG logo" width=50% height=50%></div>
 
 DPPTGG (D++ top.gg) is a C++-17+ library that wraps around [D++](https://github.com/brainboxdotcc/DPP)'s `http_server` class, helping its user listen to webhook requests from top.gg.
 
