@@ -1,4 +1,9 @@
 cmake-build-debug/
 build/
 .idea
-.vscode
+.vscode/
+test/config.json
+test/cmake-build-debug/
+test/build/
+test/.idea/
+test/.vscode/

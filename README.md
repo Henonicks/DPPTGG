@@ -39,21 +39,23 @@ int main() {
 
 	bot.on_log(dpp::utility::cout_logger()); // Cluster-specific logs are handled with this
 
-	dpptgg::listener listener("0.0.0.0", 6553, "wsh_bot", "wsh_server",
-		[](dpptgg::topgg_request const& request) {
-			std::cout << "A " << (request.project_type == dpptgg::pt_bot ? "bot" : "server") << " vote has arrived!\n";
-			std::cout << "The user's ID on Discord is: " << request.user_platform_id << std::endl;
-			// By default, the response status will be 204 (No Content) here. You are free to change it to whatever.
-		},
-		[](dpptgg::non_topgg_request const& request) {
-			std::cout << "Verification failed! Error code: " << request.status << std::endl;
-			// Refer to the dpptgg::sender_identification_statuses enum. The error has also been logged.
-		}, &bot
+	dpptgg::listener listener("0.0.0.0", 6553,
+        {"endpoint" : {"wsh_", "wsh_"}, "endpoint" : {"wsh_"}}, // Add as many secrets as you have. Multiple can be handled on the same endpoint.
+            [](dpptgg::topgg_request const& request) {
+                std::cout << "A " << (request.project_type == dpptgg::pt_bot ? "bot" : "server") << " vote has arrived!\n";
+                std::cout << "The user's ID on Discord is: " << request.user_platform_id << std::endl;
+                // By default, the response status will be 204 (No Content) here. You are free to change it to whatever.
+            },
+            [](dpptgg::non_topgg_request const& request) {
+                std::cout << "Verification failed! Error code: " << request.status << std::endl;
+                // Refer to the dpptgg::sender_identification_statuses enum. The error has also been logged.
+            },
+        &bot
 	);
 
 	listener.on_log([](dpp::log_t const& log) { // If this is set, non-cluster-specific logs are handled with this, otherwise bot.on_log is used.
 		std::cout << log.message << ' ' << log.severity << std::endl;
-	});
+	}); // dpp::utiltity::cout_logger() fits here as well.
 
 	listener.start();
 	// Starts the cluster and therefore itself.
