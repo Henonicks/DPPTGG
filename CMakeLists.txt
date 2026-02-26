@@ -7,7 +7,7 @@ set(PROJECT_NAME "dpptgg")
 
 project(${PROJECT_NAME})
 aux_source_directory("lib/dpptgg" coresrc)
-add_library(${PROJECT_NAME} ${coresrc})
+add_library(${PROJECT_NAME} SHARED ${coresrc})
 
 string(ASCII 27 Esc)
 

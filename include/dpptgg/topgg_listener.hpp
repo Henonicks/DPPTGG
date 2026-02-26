@@ -84,8 +84,16 @@ namespace dpptgg {
 		// The underlying request.
 		dpp::http_server_request* request;
 	};
+
 	using topgg_request_event = std::function <void(topgg_request const&)>;
 	using non_topgg_request_event = std::function <void(non_topgg_request const&)>;
+
+	// An std::vector of std::strings, used to store top.gg secrets
+	using secrets_vector = std::vector <std::string>;
+
+	// An std::map with top.gg webhook secrets, where the key is an endpoint and the value is a secrets_vector with all the respective secrets.
+	using secrets_map = std::map <std::string, secrets_vector>;
+
 	class listener {
 
 		// The IP that the server will listen to.
@@ -94,11 +102,8 @@ namespace dpptgg {
 		// The port that the server will listen to.
 		uint16_t port;
 
-		// The webhook secret of the bot on top.gg, starting with "whs_".
-		std::string topgg_bot_webhook_secret;
-
-		// The webhook secret of the server on top.gg, starting with "whs_".
-		std::string topgg_server_webhook_secret;
+		// A secrets_map with all the top.gg secrets to be used.
+		secrets_map secrets;
 
 		// The function that will get called whenever a request comes in from top.gg.
 		topgg_request_event topgg_handler;
@@ -113,11 +118,12 @@ namespace dpptgg {
 		dpp::cluster* server_cluster;
 
 		/**
-		 * @brief Log a message using a logger from an on_log, unless it's empty, then server_cluster->log will be used instead.
-		 * @param severity One of the values from dpp::loglevel, indicating the severity of the message.
-		 * @param msg The message to log.
+		 * @brief Check whether the http request came from top.gg or not. A guide on how to do this can be found here: https://docs.top.gg/docs/API/v1/webhooks/
+		 * @param request The information about the request.
+		 * @param payload_json A reference to the json object to save the parsed payload in.
+		 * @return a sender_identification_status value indicating the reason for the verification failure or the fact that the request did, in fact, come from top.gg.
 		 */
-		void log(dpp::loglevel severity, std::string const& msg) const;
+		sender_identification_statuses identify_sender(dpp::http_server_request const* request, nlohmann::json& payload_json);
 	public:
 		listener() = delete;
 
@@ -125,13 +131,12 @@ namespace dpptgg {
 		 * @brief Construct a new top.gg listener.
 		 * @param ip The IP to bind the listener to. "0.0.0.0" binds to all local addresses.
 		 * @param port The port to bind the listener to. It's advised to use a port > 1024.
-		 * @param topgg_bot_webhook_secret_arg Your bot's webhook secret on top.gg, starting with "whs_".
-		 * @param topgg_server_webhook_secret_arg Your server's webhook secret on top.gg, starting with "whs_".
+		 * @param secrets_arg A secrets_map with all the secrets for their respective endpoints.
 		 * @param topgg_handler_arg The callback to call if the incoming request is from top.gg.
 		 * @param non_topgg_handler_arg The callback to call if the incoming request is not from top.gg.
 		 * @param new_cluster A pointer to the cluster to attach the listener to. The default value is nullptr which tells the constructor to create a new cluster.
 		 */
-		listener(std::string_view ip, uint16_t port, std::string_view topgg_bot_webhook_secret_arg, std::string_view topgg_server_webhook_secret_arg,
+		listener(std::string_view ip, uint16_t port, secrets_map secrets_arg,
 			topgg_request_event topgg_handler_arg, non_topgg_request_event non_topgg_handler_arg = non_topgg_request_event(), dpp::cluster* new_cluster = nullptr);
 
 		listener(listener const&) = delete;
@@ -142,6 +147,13 @@ namespace dpptgg {
 
 		// Callbacks to call when a log message is to be written to the log with listener::log. The function works the same way as dpp::cluster::on_log, in fact, if listener::on_log is empty, it will default to dpp::cluster::log.
 		dpp::event_router_t <dpp::log_t> on_log;
+
+		/**
+		 * @brief Log a message using a logger from an on_log, unless it's empty, then server_cluster->log will be used instead.
+		 * @param severity One of the values from dpp::loglevel, indicating the severity of the message.
+		 * @param msg The message to log.
+		 */
+		void log(dpp::loglevel severity, std::string const& msg) const;
 
 		/**
 		 * @brief Start the underlying cluster and therefore the http_server.

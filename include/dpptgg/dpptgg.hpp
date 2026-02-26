@@ -17,25 +17,7 @@
 
 #pragma once
 
-#include <string>
-#include <exception>
-
-namespace dpptgg {
-
-	/**
-	 * @brief Thrown when dpptgg::datetime tries to parse a timestamp that's not formatted like the top.gg ones.
-	 */
-	class timestamp_exception final : public std::exception {
-		std::string error_message;
-	public:
-		timestamp_exception() = delete;
-
-		/**
-		 * @brief Construct a new timestamp_exception.
-		 * @param timestamp The problematic timestamp.
-		 * @param pos The position at which the issue arises.
-		 */
-		explicit timestamp_exception(std::string_view timestamp = "", size_t pos = std::string::npos);
-		[[nodiscard]] char const* what() const noexcept override;
-	};
-}
+#include "dpptgg/topgg_listener.hpp"
+#include "dpptgg/topgg_handler.hpp"
+#include "dpptgg/timestamp.hpp"
+#include "dpptgg/dpptgg.hpp"

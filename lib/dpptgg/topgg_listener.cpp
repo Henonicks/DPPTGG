@@ -29,8 +29,8 @@ void dpptgg::listener::log(dpp::loglevel const severity, std::string const& msg)
 	}
 }
 
-dpptgg::listener::listener(std::string_view const ip, uint16_t const port, std::string_view const topgg_bot_webhook_secret_arg, std::string_view const topgg_server_webhook_secret_arg, topgg_request_event topgg_handler_arg, non_topgg_request_event non_topgg_handler_arg, dpp::cluster* const new_cluster) :
-ip(ip), port(port), topgg_bot_webhook_secret(topgg_bot_webhook_secret_arg), topgg_server_webhook_secret(topgg_server_webhook_secret_arg), topgg_handler(std::move(topgg_handler_arg)), non_topgg_handler(std::move(non_topgg_handler_arg)) {
+dpptgg::listener::listener(std::string_view const ip, uint16_t const port, secrets_map secrets_arg, topgg_request_event topgg_handler_arg, non_topgg_request_event non_topgg_handler_arg, dpp::cluster* const new_cluster) :
+ip(ip), port(port), secrets(std::move(secrets_arg)), topgg_handler(std::move(topgg_handler_arg)), non_topgg_handler(std::move(non_topgg_handler_arg)) {
 	if (new_cluster == nullptr) {
 		default_cluster = true;
 		server_cluster = new dpp::cluster();
@@ -42,7 +42,7 @@ ip(ip), port(port), topgg_bot_webhook_secret(topgg_bot_webhook_secret_arg), topg
 	this->server = new dpp::http_server(this->server_cluster, ip, port, [this](dpp::http_server_request* request) {
 		this->log(dpp::ll_trace, "In came a request to " + request->get_path());
 		nlohmann::json payload_json;
-		sender_identification_statuses const status = identify_sender(request, this->topgg_bot_webhook_secret, this->topgg_server_webhook_secret, payload_json);
+		sender_identification_statuses const status = this->identify_sender(request, payload_json);
 		if (status == sis_topgg) {
 			request->set_status(204); // OK No Content
 			vote_types const vote_type = payload_json["type"] == "vote.create" ? vt_vote_create : vt_webhook_test;

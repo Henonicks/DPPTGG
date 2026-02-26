@@ -21,11 +21,13 @@
 #include <dpp/nlohmann/json.hpp>
 
 namespace dpptgg {
+
 	/**
 	 * @brief Values that indicate if a request came from top.gg, otherwise which part of the verification failed.
 	 */
 	enum sender_identification_statuses : uint8_t {
 		sis_topgg, // Verification successful.
+		sis_no_secrets, // No secrets for the endpoint set.
 		sis_signature_no_timestamp, // The signature doesn't start with a timestamp as described in top.gg's documentation.
 		sis_content_type_not_json, // The content does not start with application/json.
 		sis_bad_signature, // The signature is badly formatted/missing.
@@ -55,15 +57,7 @@ namespace dpptgg {
 	enum project_platforms : bool {
 		pp_discord,
 	};
-	/**
-	 * @brief Check whether the http request came from top.gg or not. A guide on how to do this can be found here: https://docs.top.gg/docs/API/v1/webhooks/
-	 * @param request The information about the request.
-	 * @param topgg_bot_webhook_secret The bot's webhook secret, starting with "whs_".
-	 * @param topgg_server_webhook_secret The server's webhook secret, starting with "whs_".
-	 * @param payload_json A reference to the json object to save the parsed payload in.
-	 * @return a sender_identification_status value indicating the reason for the verification failure or the fact that the request did, in fact, come from top.gg.
-	 */
-	sender_identification_statuses identify_sender(dpp::http_server_request const* request, std::string_view topgg_bot_webhook_secret, std::string_view topgg_server_webhook_secret, nlohmann::json& payload_json);
+
 	/**
 	 * @brief Generates an HMAC SHA256 digest, used to verify the identity of the request sender as top.gg.
 	 * @param key Key.
