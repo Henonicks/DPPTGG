@@ -31,10 +31,10 @@ namespace dpptgg {
 	struct topgg_request {
 
 		// The type of the vote, either "vote_create" or "webhook_test".
-		vote_types vote_type;
+		vote_types vote_type{};
 
 		// The ID of the vote itself.
-		dpp::snowflake vote_id;
+		dpp::snowflake vote_id{};
 
 		// The weight of the vote, e.g. how many points it's worth. Set to 0 if not provided in the payload (vote_type == webhook_test).
 		uint8_t vote_weight{};
@@ -46,31 +46,31 @@ namespace dpptgg {
 		datetime expires_at{};
 
 		// The ID of the project on top.gg (NOT Discord!).
-		dpp::snowflake project_id;
+		dpp::snowflake project_id{};
 
 		// The type of the project, either "bot" or "server".
-		project_types project_type;
+		project_types project_type{};
 
 		// The platform that the project belongs to, always be "discord".
-		project_platforms project_platform;
+		project_platforms project_platform{};
 
 		// The ID of the project on its platform (e.g. on Discord).
-		dpp::snowflake project_platform_id;
+		dpp::snowflake project_platform_id{};
 
 		// The top.gg ID of the user who voted (NOT their Discord user ID!).
-		dpp::snowflake user_id;
+		dpp::snowflake user_id{};
 
 		// The ID of the user who voted on the project's platform (e.g. on Discord).
-		dpp::snowflake user_platform_id;
+		dpp::snowflake user_platform_id{};
 
 		// The username of the user who voted.
-		std::string username;
+		std::string username{};
 
 		// The avatar URL of the user who voted.
-		std::string user_avatar_url;
+		std::string user_avatar_url{};
 
 		// The underlying request.
-		dpp::http_server_request* request;
+		dpp::http_server_request* request{};
 	};
 
 	/**
@@ -154,6 +154,12 @@ namespace dpptgg {
 		 * @param msg The message to log.
 		 */
 		void log(dpp::loglevel severity, std::string const& msg) const;
+
+		/**
+		 * @brief Get a reference to the underlying cluster.
+		 * @return A reference to the cluster.
+		 */
+		[[nodiscard]] dpp::cluster* get_cluster() const;
 
 		/**
 		 * @brief Start the underlying cluster and therefore the http_server.

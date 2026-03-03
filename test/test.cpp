@@ -17,6 +17,7 @@
 #include "dpptgg/dpptgg.hpp"
 
 #include <fstream>
+#include <chrono>
 
 int main() {
 	nlohmann::json config;
@@ -26,6 +27,8 @@ int main() {
 	file.close();
 	std::string const& IP = config["TOPGG_WEBHOOK_LISTEN_IP"];
 	int16_t const PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
+	std::string const& TOKEN = config["TOPGG_BOT_TOKEN"];
+	dpp::snowflake const USER_ID = config["USER_ID"];
 	dpptgg::secrets_map secrets;
 	for (auto const& x : config["TOPGG_WEBHOOK_SECRETS"].get <std::vector <std::map <std::string, std::string>>>()) {
 		for (const auto& [endpoint, secret] : x) {
@@ -34,7 +37,6 @@ int main() {
 	}
 
 	dpptgg::listener listener(IP, PORT, secrets, [](dpptgg::topgg_request const& request) {
-		std::cout << request.request->get_path() << '\n';
 		std::cout << request.vote_type
 		          << request.vote_id << '\n'
 		          << request.vote_weight << '\n'
@@ -52,6 +54,42 @@ int main() {
 
 	listener.on_log(dpp::utility::cout_logger());
 
+	dpptgg::poker poker(TOKEN);
+
+	poker.get_cluster()->on_log(dpp::utility::cout_logger());
+
+	auto const now = std::chrono::system_clock::now();
+	auto const time_t = std::chrono::system_clock::to_time_t(now);
+
+	dpptgg::datetime start_date = {
+		.year = static_cast <uint16_t>(1900 + std::localtime(&time_t)->tm_year),
+		.month = static_cast <uint8_t>(std::localtime(&time_t)->tm_mon + 1),
+		.day = static_cast <uint8_t>(std::localtime(&time_t)->tm_mday),
+	};
+
+	poker.get_current_project([](dpptgg::topgg_request_completion_t const& callback) {
+		std::cout << "get_current_project: " << callback.request.body << std::endl;
+	});
+
+	poker.get_votes(start_date, [&poker](dpptgg::topgg_request_completion_t const& callback) {
+		poker.get_votes(callback.get <dpptgg::requested_votes_t>().cursor, [](dpptgg::topgg_request_completion_t const& inner_callback) {
+			std::cout << "get_votes: " << inner_callback.get <dpptgg::requested_votes_t>().cursor << std::endl;
+		});
+	});
+
+	poker.get_vote_status_by_user(USER_ID, [](dpptgg::topgg_request_completion_t const& callback) {
+		std::cout << "get_vote_status_by_user: " << callback.request.body << std::endl;
+	}, dpptgg::us_discord);
+
+	dpp::slashcommand test("test", "test command", poker.get_cluster()->me.id);
+
+	dpptgg::slashcommand_array commands = {test};
+
+	poker.update_discord_bot_commands(commands, [](dpptgg::topgg_request_completion_t const& callback) {
+		std::cout << "update_discord_bot_commands: " << callback.request.status << '\n';
+	});
+
+	poker.start(dpp::st_return);
 	listener.start();
 
 	return 0;

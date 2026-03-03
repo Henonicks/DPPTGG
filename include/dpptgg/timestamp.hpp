@@ -32,7 +32,18 @@ namespace dpptgg {
 		uint32_t nanosecond{};
 		int16_t  timezone_hours{};
 		uint16_t timezone_minutes{};
+		/**
+		 * @brief Generates an ISO 8601 timestamp.
+		 * @return The ISO 8601 timestamp.
+		 */
 		[[nodiscard]] std::string get_timestamp() const;
+
+		/**
+		 * @brief Parses a timestamp string and converts it into a datetime object.
+		 * @param timestamp The string to parse from.
+		 * @return The datetime object.
+		 * @throws A dpptgg::timestamp_exception if the format is not of an ISO 8601 timestamp.
+		 */
 		[[nodiscard]] static datetime parse(std::string_view timestamp);
 	};
 }

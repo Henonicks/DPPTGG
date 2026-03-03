@@ -68,3 +68,5 @@ else()
         message(FATAL_ERROR "Failed to find the git executable. Can't update the D++ submodule.")
     endif()
 endif()
+
+target_compile_options(${PROJECT_NAME} PUBLIC "-g")
