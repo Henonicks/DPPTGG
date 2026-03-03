@@ -23,5 +23,3 @@ add_executable(${PROJECT_NAME} test.cpp)
 find_package(DPPTGG MODULE)
 target_include_directories(${PROJECT_NAME} PUBLIC ${DPPTGG_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${DPPTGG_LIBRARIES} dpp)
-
-target_compile_options(${PROJECT_NAME} PUBLIC "-g")
