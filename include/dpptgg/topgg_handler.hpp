@@ -33,30 +33,49 @@ namespace dpptgg {
 		sis_bad_signature, // The signature is badly formatted/missing.
 		sis_bad_json_format, // Couldn't parse the request body json.
 		sis_bad_authorisation, // The HMAC SHA256 digest doesn't match the V1 signature.
+		sis_unsupported_type, // The request did come from top.gg but the project type is unsupported.
 	};
 
 	/**
 	 * @brief The types of a vote.
 	 */
-	enum vote_types : bool {
+	enum vote_types : uint8_t {
+		vt_na,
 		vt_vote_create,
 		vt_webhook_test,
 	};
 
+	vote_types vote_type_from_str(std::string_view s);
+
 	/**
 	 * @brief The types of a project.
 	 */
-	enum project_types : bool {
+	enum project_types : uint8_t {
+		pt_na,
 		pt_bot, // Bot.
 		pt_server, // Guild.
 	};
+
+	project_types project_type_from_str(std::string_view s);
 
 	/**
 	 * @brief top.gg includes the platform in its JSONs, even though it's always "discord".
 	 */
 	enum project_platforms : bool {
+		pp_na,
 		pp_discord,
 	};
+
+	project_platforms project_platform_from_str(std::string_view s);
+
+	enum user_sources : uint8_t {
+		us_na,
+		us_topgg,
+		us_discord,
+	};
+
+	user_sources user_source_from_str(std::string_view s);
+	std::string str_from_user_source(user_sources user_source);
 
 	/**
 	 * @brief Generates an HMAC SHA256 digest, used to verify the identity of the request sender as top.gg.

@@ -18,6 +18,7 @@
 #pragma once
 
 #include "dpptgg/topgg_listener.hpp"
+#include "dpptgg/topgg_poker.hpp"
 #include "dpptgg/topgg_handler.hpp"
 #include "dpptgg/timestamp.hpp"
-#include "dpptgg/dpptgg.hpp"
+#include "dpptgg/exception.hpp"

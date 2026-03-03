@@ -82,6 +82,34 @@ dpptgg::sender_identification_statuses dpptgg::listener::identify_sender(dpp::ht
 	return sis_bad_authorisation;
 }
 
+dpptgg::vote_types dpptgg::vote_type_from_str(std::string_view const s) {
+	return s == "vote.create" ? vt_vote_create : s == "webhook.test" ? vt_webhook_test : vt_na;
+}
+
+dpptgg::project_types dpptgg::project_type_from_str(std::string_view const s) {
+	return s == "bot" ? pt_bot : s == "server" ? pt_server : pt_na;
+}
+
+dpptgg::project_platforms dpptgg::project_platform_from_str(std::string_view const s) {
+	return s == "discord" ? pp_discord : pp_na;
+}
+
+dpptgg::user_sources dpptgg::user_source_from_str(std::string_view const s) {
+	return s == "topgg" ? us_topgg : s == "discord" ? us_discord : us_na;
+}
+
+std::string dpptgg::str_from_user_source(user_sources user_source) {
+	switch (user_source) {
+	case us_topgg:
+		return "topgg";
+	case us_discord:
+		return "discord";
+	default:
+		return "";
+	}
+}
+
+
 std::string dpptgg::get_hmac_sha256_hex(std::string_view const key, std::string_view const message) {
 	uint8_t hash[EVP_MAX_MD_SIZE];
 	uint32_t hash_size;

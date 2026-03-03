@@ -45,10 +45,22 @@ ip(ip), port(port), secrets(std::move(secrets_arg)), topgg_handler(std::move(top
 		sender_identification_statuses const status = this->identify_sender(request, payload_json);
 		if (status == sis_topgg) {
 			request->set_status(204); // OK No Content
-			vote_types const vote_type = payload_json["type"] == "vote.create" ? vt_vote_create : vt_webhook_test;
-			project_types const project_type = payload_json["data"]["project"]["type"] == "bot" ? pt_bot : pt_server;
-			project_platforms constexpr project_platform = pp_discord;
-
+			vote_types const vote_type = vote_type_from_str(payload_json["type"].get_ref <std::string&>());
+			project_types const project_type = project_type_from_str(payload_json["data"]["project"]["type"].get_ref <std::string&>());
+			project_platforms const project_platform = project_platform_from_str(payload_json["data"]["project"]["platform"].get_ref <std::string&>());
+			if (vote_type == vt_na || project_type == pt_na || project_platform == pp_na) {
+				request->set_status(500);
+				if (vote_type == vt_na) {
+					log(dpp::ll_trace, "The request type is not supported.");
+				}
+				if (project_type == pt_na) {
+					log(dpp::ll_trace, "The project type is not supported.");
+				}
+				if (project_platform == pp_na) {
+					log(dpp::ll_trace, "The project platform is not supported.");
+				}
+				this->non_topgg_handler({status, request});
+			}
 			dpp::snowflake vote_id{};
 			uint8_t vote_weight{};
 			datetime created_at{};
@@ -84,6 +96,10 @@ ip(ip), port(port), secrets(std::move(secrets_arg)), topgg_handler(std::move(top
 	});
 }
 
+dpp::cluster* dpptgg::listener::get_cluster() const {
+	return this->server_cluster;
+}
+
 void dpptgg::listener::start(dpp::start_type const return_after) const {
 	this->server_cluster->start(return_after);
 }
@@ -93,8 +109,8 @@ void dpptgg::listener::shutdown() const {
 }
 
 dpptgg::listener::~listener() {
+	delete this->server;
 	if (this->default_cluster) {
 		delete this->server_cluster;
 	}
-	delete this->server;
 }
