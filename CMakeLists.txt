@@ -6,8 +6,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(PROJECT_NAME "dpptgg")
 
 project(${PROJECT_NAME})
-aux_source_directory("lib/dpptgg" coresrc)
-add_library(${PROJECT_NAME} SHARED ${coresrc})
+aux_source_directory("lib/dpptgg" dpptgg_src)
+add_library(${PROJECT_NAME} SHARED ${dpptgg_src})
 
 string(ASCII 27 Esc)
 
