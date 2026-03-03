@@ -128,9 +128,8 @@ void dpptgg::poker::update_discord_bot_commands(slashcommand_array const& comman
 			.request = std::move(request)
 		};
 		try {
-			std::cout << request.body << std::endl;
-			callback.raw_json = nlohmann::json::parse(request.body);
 			if (request.status / 100 != 2) {
+				callback.raw_json = nlohmann::json::parse(request.body);
 				callback.error = error_from_json(callback.raw_json);
 			}
 		}
