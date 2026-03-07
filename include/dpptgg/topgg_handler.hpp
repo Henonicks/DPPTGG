@@ -77,6 +77,36 @@ namespace dpptgg {
 	user_sources user_source_from_str(std::string_view s);
 	std::string str_from_user_source(user_sources user_source);
 
+	enum bot_fields : uint8_t {
+		sf_na,
+		sf_id,
+		sf_username,
+		sf_discriminator,
+		sf_avatar,
+		sf_def_avatar,
+		sf_lib,
+		sf_prefix,
+		sf_shortdesc,
+		sf_longdesc,
+		sf_tags,
+		sf_website,
+		sf_support,
+		sf_github,
+		sf_owners,
+		sf_guilds,
+		sf_invite,
+		sf_date,
+		sf_server_count,
+		sf_shard_count,
+		sf_certified_bot,
+		sf_vanity,
+		sf_points,
+		sf_monthly_points,
+		sf_donatebot_guild_id,
+	};
+
+	std::string str_from_sort_field(bot_fields sort_field);
+
 	/**
 	 * @brief Generates an HMAC SHA256 digest, used to verify the identity of the request sender as top.gg.
 	 * @param key Key.
