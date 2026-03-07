@@ -28,7 +28,9 @@ int main() {
 	std::string const& IP = config["TOPGG_WEBHOOK_LISTEN_IP"];
 	int16_t const PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
 	std::string const& TOKEN = config["TOPGG_BOT_TOKEN"];
+	std::string const& V0_TOKEN = config["TOPGG_V0_TOKEN"];
 	dpp::snowflake const USER_ID = config["USER_ID"];
+	dpp::snowflake const BOT_ID = config["BOT_ID"];
 	dpptgg::secrets_map secrets;
 	for (auto const& x : config["TOPGG_WEBHOOK_SECRETS"].get <std::vector <std::map <std::string, std::string>>>()) {
 		for (const auto& [endpoint, secret] : x) {
@@ -58,6 +60,21 @@ int main() {
 
 	poker.get_cluster()->on_log(dpp::utility::cout_logger());
 
+	poker.get_bots([](dpptgg::v0::request_completion_t const& callback) {
+		std::cout << "get_bots: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
+	});
+
+	poker.get_user_vote([](dpptgg::v0::request_completion_t const& callback) {
+		std::cout << "get_user_vote: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
+	}, BOT_ID, USER_ID);
+
+	poker.post_stats([&poker, BOT_ID](dpptgg::v0::request_completion_t const& callback) {
+		std::cout << "post_stats: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
+		poker.get_stats([](dpptgg::v0::request_completion_t const& callback) {
+			std::cout << "get_stats: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
+		}, BOT_ID);
+	}, BOT_ID, 1);
+
 	auto const now = std::chrono::system_clock::now();
 	auto const time_t = std::chrono::system_clock::to_time_t(now);
 
@@ -67,26 +84,26 @@ int main() {
 		.day = static_cast <uint8_t>(std::localtime(&time_t)->tm_mday),
 	};
 
-	poker.get_current_project([](dpptgg::topgg_request_completion_t const& callback) {
-		std::cout << "get_current_project: " << callback.request.body << std::endl;
+	poker.get_current_project([](dpptgg::v1::request_completion_t const& callback) {
+		std::cout << "get_current_project: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
 	});
 
-	poker.get_votes(start_date, [&poker](dpptgg::topgg_request_completion_t const& callback) {
-		poker.get_votes(callback.get <dpptgg::requested_votes_t>().cursor, [](dpptgg::topgg_request_completion_t const& inner_callback) {
-			std::cout << "get_votes: " << inner_callback.get <dpptgg::requested_votes_t>().cursor << std::endl;
+	poker.get_votes(start_date, [&poker](dpptgg::v1::request_completion_t const& callback) {
+		poker.get_votes(callback.get <dpptgg::v1::requested_votes_t>().cursor, [](dpptgg::v1::request_completion_t const& inner_callback) {
+			std::cout << "get_votes: " << inner_callback.request.status << ' ' << inner_callback.get <dpptgg::v1::requested_votes_t>().cursor << std::endl;
 		});
 	});
 
-	poker.get_vote_status_by_user(USER_ID, [](dpptgg::topgg_request_completion_t const& callback) {
-		std::cout << "get_vote_status_by_user: " << callback.request.body << std::endl;
+	poker.get_vote_status_by_user(USER_ID, [](dpptgg::v1::request_completion_t const& callback) {
+		std::cout << "get_vote_status_by_user: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
 	}, dpptgg::us_discord);
 
 	dpp::slashcommand test("test", "test command", poker.get_cluster()->me.id);
 
-	dpptgg::slashcommand_array commands = {test};
+	dpptgg::v1::slashcommand_array commands = {test};
 
-	poker.update_discord_bot_commands(commands, [](dpptgg::topgg_request_completion_t const& callback) {
-		std::cout << "update_discord_bot_commands: " << callback.request.status << '\n';
+	poker.update_discord_bot_commands(commands, [](dpptgg::v1::request_completion_t const& callback) {
+		std::cout << "update_discord_bot_commands: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 	});
 
 	poker.start(dpp::st_return);

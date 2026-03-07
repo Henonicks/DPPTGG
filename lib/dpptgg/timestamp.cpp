@@ -48,7 +48,7 @@ std::string dpptgg::datetime::get_timestamp() const {
 		--fixed_day;
 	}
 	switch (fixed_month) {
-	case 1: case 3: case 5: case 8: case 10: case 12:
+	case 1: case 3: case 5: case 7: case 8: case 10: case 12:
 		if (fixed_day > 31) {
 			fixed_day -= 31;
 			++fixed_month;
@@ -68,7 +68,7 @@ std::string dpptgg::datetime::get_timestamp() const {
 			--fixed_month;
 		}
 		break;
-	case 4: case 6: case 7: case 9: case 11:
+	case 4: case 6: case 9: case 11:
 		if (fixed_day > 30) {
 			fixed_day -= 30;
 			++fixed_month;
@@ -156,7 +156,7 @@ dpptgg::datetime dpptgg::datetime::parse(std::string_view const timestamp) {
 			res.day *= 10;
 			res.day += timestamp[i] - '0';
 			switch (res.month) {
-			case 1: case 3: case 5: case 8: case 10: case 12:
+			case 1: case 3: case 5: case 7: case 8: case 10: case 12:
 				if (res.day > 31) {
 					throw timestamp_exception(timestamp, i);
 				}
@@ -166,7 +166,7 @@ dpptgg::datetime dpptgg::datetime::parse(std::string_view const timestamp) {
 					throw timestamp_exception(timestamp, i);
 				}
 				break;
-			case 4: case 6: case 7: case 9: case 11:
+			case 4: case 6: case 9: case 11:
 				if (res.day > 30) {
 					throw timestamp_exception(timestamp, i);
 				}

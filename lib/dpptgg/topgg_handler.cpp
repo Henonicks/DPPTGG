@@ -98,7 +98,7 @@ dpptgg::user_sources dpptgg::user_source_from_str(std::string_view const s) {
 	return s == "topgg" ? us_topgg : s == "discord" ? us_discord : us_na;
 }
 
-std::string dpptgg::str_from_user_source(user_sources user_source) {
+std::string dpptgg::str_from_user_source(user_sources const user_source) {
 	switch (user_source) {
 	case us_topgg:
 		return "topgg";
@@ -109,6 +109,60 @@ std::string dpptgg::str_from_user_source(user_sources user_source) {
 	}
 }
 
+std::string dpptgg::str_from_sort_field(bot_fields const sort_field) {
+	switch (sort_field) {
+		case sf_id:
+			return "id";
+		case sf_username:
+			return "username";
+		case sf_discriminator:
+			return "discriminator";
+		case sf_avatar:
+			return "avatar";
+		case sf_def_avatar:
+			return "def_avatar";
+		case sf_lib:
+			return "lib";
+		case sf_prefix:
+			return "prefix";
+		case sf_shortdesc:
+			return "shortdesc";
+		case sf_longdesc:
+			return "longdesc";
+		case sf_tags:
+			return "tags";
+		case sf_website:
+			return "website";
+		case sf_support:
+			return "support";
+		case sf_github:
+			return "github";
+		case sf_owners:
+			return "owners";
+		case sf_guilds:
+			return "guilds";
+		case sf_invite:
+			return "invite";
+		case sf_date:
+			return "date";
+		case sf_server_count:
+			return "server_count";
+		case sf_shard_count:
+			return "shard_count";
+		case sf_certified_bot:
+			return "certified_bot";
+		case sf_vanity:
+			return "vanity";
+		case sf_points:
+			return "points";
+		case sf_monthly_points:
+			return "monthly_points";
+		case sf_donatebot_guild_id:
+			return "donatebot_guild_id";
+		default:
+			return "";
+	}
+}
 
 std::string dpptgg::get_hmac_sha256_hex(std::string_view const key, std::string_view const message) {
 	uint8_t hash[EVP_MAX_MD_SIZE];
