@@ -17,7 +17,7 @@
 
 #include "dpptgg/topgg_poker.hpp"
 
-dpptgg::poker::poker(std::string_view const token_arg, dpp::cluster const* const poker_cluster_arg) {
+dpptgg::poker::poker(std::string_view const token_arg, dpp::cluster* const poker_cluster_arg) {
 	this->v1_token = std::string("Bearer ") + token_arg.data();
 	this->v0_token = std::string_view(this->v1_token).substr(7, token_arg.size());
 	if (poker_cluster_arg == nullptr) {
@@ -25,6 +25,7 @@ dpptgg::poker::poker(std::string_view const token_arg, dpp::cluster const* const
 		this->default_cluster = true;
 	}
 	else {
+		this->poker_cluster = poker_cluster_arg;
 		this->default_cluster = false;
 	}
 }
