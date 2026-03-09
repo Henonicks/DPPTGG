@@ -143,7 +143,7 @@ dpptgg::v0::requested_votes_t dpptgg::v0::votes_from_json(nlohmann::json const& 
 	return res;
 }
 
-dpptgg::v0::server_count_t dpptgg::v0::stats_from_json(nlohmann::json const& json) {
+dpptgg::v0::server_count_t dpptgg::v0::server_count_from_json(nlohmann::json const& json) {
 	return json["server_count"];
 }
 
@@ -236,14 +236,14 @@ void dpptgg::poker::get_bots(v0::completion_event const& topgg_callback, uint16_
 	});
 }
 
-void dpptgg::poker::get_stats(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id) {
+void dpptgg::poker::get_server_count(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id) {
 	this->poker_cluster->request(v0::BASE_API_URL + "bots/" + bot_id.str() + "/stats", dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
 		v0::request_completion_t callback = {
 			.request = std::move(request)
 		};
 		if (request.status / 100 == 2) {
 			callback.raw_json = nlohmann::json::parse(request.body);
-			callback.value = v0::stats_from_json(callback.raw_json);
+			callback.value = v0::server_count_from_json(callback.raw_json);
 		}
 		topgg_callback(callback);
 	}, "", text_plain, {
@@ -266,7 +266,7 @@ void dpptgg::poker::get_user_vote(v0::completion_event const& topgg_callback, dp
 	});
 }
 
-void dpptgg::poker::post_stats(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id, uint64_t const server_count) {
+void dpptgg::poker::post_server_count(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id, uint64_t const server_count) {
 	this->poker_cluster->request(v0::BASE_API_URL + "bots/" + bot_id.str() + "/stats", dpp::m_post, [topgg_callback](dpp::http_request_completion_t const& request) {
 		topgg_callback({
 			.request = std::move(request)

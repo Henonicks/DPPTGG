@@ -149,7 +149,7 @@ namespace dpptgg {
 
 		using server_count_t = uint64_t;
 
-		server_count_t stats_from_json(nlohmann::json const& json);
+		server_count_t server_count_from_json(nlohmann::json const& json);
 
 		using voted_state_t = bool;
 
@@ -408,11 +408,11 @@ namespace dpptgg {
 		void get_bots(v0::completion_event const& topgg_callback,
 			uint16_t limit = 500, uint64_t offset = 0, bot_fields sort_field = sf_na, std::vector <bot_fields> const& fields = {});
 
-		void get_stats(v0::completion_event const& topgg_callback, dpp::snowflake bot_id);
+		void get_server_count(v0::completion_event const& topgg_callback, dpp::snowflake bot_id);
 
 		void get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake bot_id, dpp::snowflake user_id);
 
-		void post_stats(v0::completion_event const& topgg_callback, dpp::snowflake bot_id, uint64_t server_count);
+		void post_server_count(v0::completion_event const& topgg_callback, dpp::snowflake bot_id, uint64_t server_count);
 
 		/**
 		 * @brief Get stats of the current project from top.gg.

@@ -17,7 +17,6 @@
 #include "dpptgg/dpptgg.hpp"
 
 #include <fstream>
-#include <chrono>
 
 int main() {
 	nlohmann::json config;
@@ -28,7 +27,6 @@ int main() {
 	std::string const& IP = config["TOPGG_WEBHOOK_LISTEN_IP"];
 	int16_t const PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
 	std::string const& TOKEN = config["TOPGG_BOT_TOKEN"];
-	std::string const& V0_TOKEN = config["TOPGG_V0_TOKEN"];
 	dpp::snowflake const USER_ID = config["USER_ID"];
 	dpp::snowflake const BOT_ID = config["BOT_ID"];
 	dpptgg::secrets_map secrets;
@@ -68,10 +66,10 @@ int main() {
 		std::cout << "get_user_vote: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 	}, BOT_ID, USER_ID);
 
-	poker.post_stats([&poker, BOT_ID](dpptgg::v0::request_completion_t const& callback) {
-		std::cout << "post_stats: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
-		poker.get_stats([](dpptgg::v0::request_completion_t const& callback) {
-			std::cout << "get_stats: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
+	poker.post_server_count([&poker, BOT_ID](dpptgg::v0::request_completion_t const& callback) {
+		std::cout << "post_server_count: " << callback.request.status << '\n';
+		poker.get_server_count([](dpptgg::v0::request_completion_t const& callback) {
+			std::cout << "get_server_count: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 		}, BOT_ID);
 	}, BOT_ID, 1);
 

@@ -9,6 +9,7 @@ To test, create a `config.json` in the `test` directory. The content is as follo
         {"endpoint2" : "secret2"}
     ],
     "TOPGG_BOT_TOKEN" : "bot token on top.gg",
-    "USER_ID" : 123456789012345678
+    "USER_ID" : 123456789012345678,
+    "BOT_ID" : 123456789012345678
 }
 ```
