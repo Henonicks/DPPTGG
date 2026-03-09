@@ -30,33 +30,6 @@ namespace dpptgg {
 	namespace v0 {
 		inline std::string const BASE_API_URL = "https://top.gg/api/";
 
-		struct bot_t;
-
-		struct requested_bots_t {
-
-			// The matching bots.
-			std::vector <bot_t> results{};
-
-			// The limit used in the request.
-			uint8_t limit{};
-
-			// The offset used in the request.
-			uint64_t offset{};
-
-			// The length of the results array.
-			uint8_t count{};
-
-			// The total number of bots that match your search.
-			uint64_t total{};
-		};
-
-		/**
-		 * @brief Convert a JSON to a requested_bots_t object.
-		 * @param json The JSON to get the bots from.
-		 * @return A requested_bots_t object with the JSON's fields.
-		 */
-		requested_bots_t bots_from_json(nlohmann::json const& json);
-
 		struct bot_t {
 
 			// The ID of the bot on Discord.
@@ -138,6 +111,31 @@ namespace dpptgg {
 		 * @return A bot_t object with the JSON's fields.
 		 */
 		bot_t bot_from_json(nlohmann::json const& json);
+
+		struct requested_bots_t {
+
+			// The matching bots.
+			std::vector <bot_t> results{};
+
+			// The limit used in the request.
+			uint8_t limit{};
+
+			// The offset used in the request.
+			uint64_t offset{};
+
+			// The length of the results array.
+			uint8_t count{};
+
+			// The total number of bots that match your search.
+			uint64_t total{};
+		};
+
+		/**
+		 * @brief Convert a JSON to a requested_bots_t object.
+		 * @param json The JSON to get the bots from.
+		 * @return A requested_bots_t object with the JSON's fields.
+		 */
+		requested_bots_t bots_from_json(nlohmann::json const& json);
 
 		struct vote_t {
 
