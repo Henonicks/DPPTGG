@@ -28,7 +28,6 @@ int main() {
 	int16_t const PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
 	std::string const& TOKEN = config["TOPGG_BOT_TOKEN"];
 	dpp::snowflake const USER_ID = config["USER_ID"];
-	dpp::snowflake const BOT_ID = config["BOT_ID"];
 	dpptgg::secrets_map secrets;
 	for (auto const& x : config["TOPGG_WEBHOOK_SECRETS"].get <std::vector <std::map <std::string, std::string>>>()) {
 		for (const auto& [endpoint, secret] : x) {
@@ -60,23 +59,23 @@ int main() {
 
 	poker.get_bots([](dpptgg::v0::request_completion_t const& callback) {
 		std::cout << "get_bots: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
-	});
+	}, 5, 0);
 
 	poker.get_user_vote([](dpptgg::v0::request_completion_t const& callback) {
 		std::cout << "get_user_vote: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
-	}, BOT_ID, USER_ID);
+	}, USER_ID);
 
-	poker.post_server_count([&poker, BOT_ID](dpptgg::v0::request_completion_t const& callback) {
+	poker.post_server_count([&poker](dpptgg::v0::request_completion_t const& callback) {
 		std::cout << "post_server_count: " << callback.request.status << '\n';
 		poker.get_server_count([](dpptgg::v0::request_completion_t const& callback) {
 			std::cout << "get_server_count: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
-		}, BOT_ID);
-	}, BOT_ID, 1);
+		});
+	}, 2);
 
 	auto const now = std::chrono::system_clock::now();
 	auto const time_t = std::chrono::system_clock::to_time_t(now);
 
-	dpptgg::datetime start_date = {
+	dpptgg::datetime const start_date = {
 		.year = static_cast <uint16_t>(1900 + std::localtime(&time_t)->tm_year),
 		.month = static_cast <uint8_t>(std::localtime(&time_t)->tm_mon + 1),
 		.day = static_cast <uint8_t>(std::localtime(&time_t)->tm_mday),

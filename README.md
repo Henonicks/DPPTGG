@@ -75,16 +75,15 @@ The poker's constructor accepts a token string and a `dpp::cluster*`. top.gg has
 ```cpp
 #include "dpptgg/topgg_poker.hpp"
 
-dpp::snowflake constexpr BOT_ID = 0; // your bot's user ID.
-
 int main() {
     dpptgg::poker poker("top.gg token");
     
+    // We can also access the underlying cluster through the poker to set up its logging.
     poker.get_cluster()->on_log(dpp::utility::cout_logger());
 
     poker.post_server_count([](dpptgg::v0::request_completion_t const& callback) {
         std::cout << callback.request.status << std::endl;
-    }, BOT_ID, 1);
+    }, 1);
 
     // Get the current date (time defaults to 00:00:00.0):
     auto const now = std::chrono::system_clock::now();
@@ -95,7 +94,9 @@ int main() {
         .day = static_cast <uint8_t>(std::localtime(&time_t)->tm_mday),
     };
     poker.get_votes(start_date, [&poker](dpptgg::v1::request_completion_t const& callback) {
-        // When a response arrives, assuming it's not erroneuous, request another batch of votes using the pagination cursor we obtained from the API.
+        /* When a response arrives, assuming it's not erroneous,
+           request another batch of votes using the pagination cursor we obtained from the API.
+           This example isn't supposed to be safe. */
         poker.get_votes(callback.get <dpptgg::v1::requested_votes_t>().cursor, [](dpptgg::v1::request_completion_t const& inner_callback) {
             std::cout << inner_callback.get <dpptgg::v1::requested_votes_t>().data.size() << std::endl;
         });

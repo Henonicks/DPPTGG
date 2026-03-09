@@ -50,6 +50,11 @@ namespace dpptgg {
 			uint64_t total{};
 		};
 
+		/**
+		 * @brief Convert a JSON to a requested_bots_t object.
+		 * @param json The JSON to get the bots from.
+		 * @return A requested_bots_t object with the JSON's fields.
+		 */
 		requested_bots_t bots_from_json(nlohmann::json const& json);
 
 		struct bot_t {
@@ -127,6 +132,11 @@ namespace dpptgg {
 			dpp::snowflake donatebot_guild_id{};
 		};
 
+		/**
+		 * @brief Convert a JSON to a bot_t object.
+		 * @param json The JSON to get the bot from.
+		 * @return A bot_t object with the JSON's fields.
+		 */
 		bot_t bot_from_json(nlohmann::json const& json);
 
 		struct vote_t {
@@ -141,12 +151,6 @@ namespace dpptgg {
 			std::string avatar{};
 		};
 
-		vote_t vote_from_json(nlohmann::json const& json);
-
-		using requested_votes_t = std::vector <vote_t>;
-
-		requested_votes_t votes_from_json(nlohmann::json const& json);
-
 		using server_count_t = uint64_t;
 
 		server_count_t server_count_from_json(nlohmann::json const& json);
@@ -155,30 +159,7 @@ namespace dpptgg {
 
 		voted_state_t voted_state_from_json(nlohmann::json const& json);
 
-		struct user_t {
-			dpp::snowflake id{};
-			std::string username{};
-			uint16_t discriminator{};
-			std::string avatar{};
-			std::string def_avatar{};
-			std::string bio{};
-			std::string banner{};
-			std::string youtube{};
-			std::string reddit{};
-			std::string twitter{};
-			std::string instagram{};
-			std::string github{};
-			std::string color{};
-			bool supporter{};
-			bool certified_dev{};
-			bool mod{};
-			bool web_mod{};
-			bool admin{};
-		};
-
-		user_t user_from_json(nlohmann::json const& json);
-
-		using callback_data_t = std::variant <std::monostate, requested_bots_t, bot_t, requested_votes_t, server_count_t, voted_state_t, user_t>;
+		using callback_data_t = std::variant <std::monostate, requested_bots_t, server_count_t, voted_state_t>;
 
 		struct request_completion_t {
 
@@ -405,47 +386,70 @@ namespace dpptgg {
 		poker(poker const&) = delete;
 		poker(poker&&) = delete;
 
+		/**
+		 * @brief Get a list of bots like the one you get by visiting the index top.gg page.
+		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::server_count_t as the underlying type upon success, holds std::monostate otherwise..
+		 * @param limit The amount of bots to return. 50 by default, 500 max.
+		 * @param offset The amount of bots to skip.
+		 * @param sort_field (Doesn't seem to be functional) The field to sort by. Multiply your enum value by -1 to reverse the order.
+		 * @param fields (Doesn't seem to be functional) The fields to show and fill in.
+		 */
 		void get_bots(v0::completion_event const& topgg_callback,
-			uint16_t limit = 500, uint64_t offset = 0, bot_fields sort_field = sf_na, std::vector <bot_fields> const& fields = {});
+			uint16_t limit = 50, uint64_t offset = 0, bot_fields sort_field = sf_na, std::vector <bot_fields> const& fields = {});
 
-		void get_server_count(v0::completion_event const& topgg_callback, dpp::snowflake bot_id);
+		/**
+		 * @brief Get the amount of servers the bot is in.
+		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::server_count_t as the underlying type upon success, holds std::monostate otherwise.
+		 */
+		void get_server_count(v0::completion_event const& topgg_callback);
 
-		void get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake bot_id, dpp::snowflake user_id);
+		/**
+		 * @brief Get the vote status of a user (whether they have voted within the last 12 hours or not).
+		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::vote_status_t as the underlying type upon success, holds std::monostate otherwise.
+		 * @param user_id The Discord user ID of the user to get the vote status of.
+		 * @deprecated This only tells you whether the user is unable to vote or not. Use get_vote_status_by_user instead.
+		 */
+		[[deprecated]] void get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake user_id);
 
-		void post_server_count(v0::completion_event const& topgg_callback, dpp::snowflake bot_id, uint64_t server_count);
+		/**
+		 * @brief Post a number to have top.gg display as your bot's server count.
+		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::server_count_t as the underlying type upon success, holds std::monostate otherwise.
+		 * @param server_count The amount of servers to tell top.gg your bot is in.
+		 */
+		void post_server_count(v0::completion_event const& topgg_callback, uint64_t server_count);
 
 		/**
 		 * @brief Get stats of the current project from top.gg.
-		 * @param topgg_callback The callback to call when a response is received.
+		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v1::requested_project_t as the underlying type upon success, holds std::monostate otherwise.
 		 */
 		void get_current_project(v1::completion_event const& topgg_callback) const;
 
 		/**
 		 * @brief Update the commands for the current project, assuming it's a bot.
 		 * @param commands An std::vector with the bot's slash commands (dpp::slashcommand objects).
-		 * @param topgg_callback The callback to call when a response is received.
+		 * @param topgg_callback The callback to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
 		 */
 		void update_discord_bot_commands(v1::slashcommand_array const& commands, v1::completion_event const& topgg_callback);
 
 		/**
 		 * @brief Get votes of the current project via a pagination cursor.
 		 * @param cursor The pagination cursor.
-		 * @param topgg_callback The function to call when a response is received.
+		 * @param topgg_callback The function to call when a response is received. value has dpptgg::v1::requested_votes_t as the underlying type upon success, holds std::monostate otherwise.
 		 */
 		void get_votes(std::string_view cursor, v1::completion_event const& topgg_callback) const;
 
 		/**
 		 * @brief Get votes of the current project since the specified date.
 		 * @param start_date The date to search since. Up to a year ago is allowed.
-		 * @param topgg_callback The function to call when a response is received.
+		 * @param topgg_callback The function to call when a response is received. value has dpptgg::v1::requested_votes_t as the underlying type upon success, holds std::monostate otherwise.
 		 */
 		void get_votes(datetime const& start_date, v1::completion_event const& topgg_callback) const;
 
 		/**
 		 * @brief Get the vote status by specified user.
 		 * @param user_id The user to check the status of.
-		 * @param topgg_callback The callback to call when a response is received.
-		 * @param user_source The source this user ID came from.
+		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v1::vote_status_t as the underlying type upon success, holds std::monostate otherwise.
+		 * @param user_source The source this user ID came from. top.gg by default (therefore the top.gg ID is to be used, not the Discord one! Unless you explicitly set it to us_discord).
 		 */
 		void get_vote_status_by_user(dpp::snowflake user_id, v1::completion_event const& topgg_callback, user_sources user_source = us_topgg) const;
 

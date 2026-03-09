@@ -110,55 +110,103 @@ std::string dpptgg::str_from_user_source(user_sources const user_source) {
 }
 
 std::string dpptgg::str_from_sort_field(bot_fields const sort_field) {
-	switch (sort_field) {
+	switch (static_cast <int8_t>(sort_field)) {
 		case sf_id:
 			return "id";
+		case -sf_id:
+			return "-id";
 		case sf_username:
 			return "username";
+		case -sf_username:
+			return "-username";
 		case sf_discriminator:
 			return "discriminator";
+		case -sf_discriminator:
+			return "-discriminator";
 		case sf_avatar:
 			return "avatar";
+		case -sf_avatar:
+			return "-avatar";
 		case sf_def_avatar:
 			return "def_avatar";
+		case -sf_def_avatar:
+			return "-def_avatar";
 		case sf_lib:
 			return "lib";
+		case -sf_lib:
+			return "-lib";
 		case sf_prefix:
 			return "prefix";
+		case -sf_prefix:
+			return "-prefix";
 		case sf_shortdesc:
 			return "shortdesc";
+		case -sf_shortdesc:
+			return "-shortdesc";
 		case sf_longdesc:
 			return "longdesc";
+		case -sf_longdesc:
+			return "-longdesc";
 		case sf_tags:
 			return "tags";
+		case -sf_tags:
+			return "-tags";
 		case sf_website:
 			return "website";
+		case -sf_website:
+			return "-website";
 		case sf_support:
 			return "support";
+		case -sf_support:
+			return "-support";
 		case sf_github:
 			return "github";
+		case -sf_github:
+			return "-github";
 		case sf_owners:
 			return "owners";
+		case -sf_owners:
+			return "-owners";
 		case sf_guilds:
 			return "guilds";
+		case -sf_guilds:
+			return "-guilds";
 		case sf_invite:
 			return "invite";
+		case -sf_invite:
+			return "-invite";
 		case sf_date:
 			return "date";
+		case -sf_date:
+			return "-date";
 		case sf_server_count:
 			return "server_count";
+		case -sf_server_count:
+			return "-server_count";
 		case sf_shard_count:
 			return "shard_count";
+		case -sf_shard_count:
+			return "-shard_count";
 		case sf_certified_bot:
 			return "certified_bot";
+		case -sf_certified_bot:
+			return "-certified_bot";
 		case sf_vanity:
 			return "vanity";
+		case -sf_vanity:
+			return "-vanity";
 		case sf_points:
 			return "points";
+		case -sf_points:
+			return "-points";
 		case sf_monthly_points:
 			return "monthly_points";
+		case -sf_monthly_points:
+			return "-monthly_points";
 		case sf_donatebot_guild_id:
 			return "donatebot_guild_id";
+		case -sf_donatebot_guild_id:
+			return "-donatebot_guild_id";
 		default:
 			return "";
 	}

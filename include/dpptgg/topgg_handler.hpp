@@ -77,7 +77,10 @@ namespace dpptgg {
 	user_sources user_source_from_str(std::string_view s);
 	std::string str_from_user_source(user_sources user_source);
 
-	enum bot_fields : uint8_t {
+	/**
+	 * @brief Represents request fields, usable at the /bots/ endpoint. Seems to be useful though.
+	 */
+	enum bot_fields : int8_t {
 		sf_na,
 		sf_id,
 		sf_username,

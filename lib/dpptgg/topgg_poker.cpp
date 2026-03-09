@@ -51,6 +51,14 @@ std::vector <dpp::snowflake> str_vector_to_snowflake(std::vector <std::string> c
 }
 
 dpptgg::v0::bot_t dpptgg::v0::bot_from_json(nlohmann::json const& json) {
+	dpp::snowflake id{};
+	if (json.contains("id")) {
+		id = json["id"].get_ref <std::string const&>();
+	}
+	std::string username{};
+	if (json.contains("username")) {
+		username = json["username"];
+	}
 	uint16_t discriminator{};
 	if (json.contains("discriminator")) {
 		discriminator = static_cast <uint16_t>(std::stoi(json["discriminator"].get_ref <std::string const&>()));
@@ -63,9 +71,25 @@ dpptgg::v0::bot_t dpptgg::v0::bot_from_json(nlohmann::json const& json) {
 	if (json.contains("defAvatar")) {
 		def_avatar = json["defAvatar"];
 	}
+	std::string lib{};
+	if (json.contains("lib")) {
+		lib = json["lib"];
+	}
+	std::string prefix{};
+	if (json.contains("prefix")) {
+		prefix = json["prefix"];
+	}
+	std::string shortdesc{};
+	if (json.contains("shortdesc")) {
+		shortdesc = json["shortdesc"];
+	}
 	std::string longdesc{};
 	if (json.contains("longdesc")) {
 		longdesc = json["longdesc"];
+	}
+	std::vector <std::string> tags{};
+	if (json.contains("tags")) {
+		tags = json["tags"];
 	}
 	std::string website{};
 	if (json.contains("website")) {
@@ -79,9 +103,21 @@ dpptgg::v0::bot_t dpptgg::v0::bot_from_json(nlohmann::json const& json) {
 	if (json.contains("github")) {
 		github = json["github"];
 	}
+	std::vector <dpp::snowflake> owners{};
+	if (json.contains("owners")) {
+		owners = str_vector_to_snowflake(json["owners"]);
+	}
+	std::vector <dpp::snowflake> guilds{};
+	if (json.contains("guilds")) {
+		guilds = str_vector_to_snowflake(json["guilds"]);
+	}
 	std::string invite{};
 	if (json.contains("invite")) {
 		invite = json["invite"];
+	}
+	datetime date{};
+	if (json.contains("date")) {
+		date = datetime::parse(json["date"].get_ref <std::string const&>());
 	}
 	uint64_t server_count{};
 	if (json.contains("server_count")) {
@@ -91,56 +127,52 @@ dpptgg::v0::bot_t dpptgg::v0::bot_from_json(nlohmann::json const& json) {
 	if (json.contains("shard_count")) {
 		shard_count = json["shard_count"];
 	}
+	bool certified_bot{};
+	if (json.contains("certifiedBot")) {
+		certified_bot = json["certifiedBot"];
+	}
 	std::string vanity{};
 	if (json.contains("vanity")) {
 		vanity = json["vanity"];
+	}
+	uint64_t points{};
+	if (json.contains("points")) {
+		points = json["points"];
+	}
+	int monthly_points{};
+	if (json.contains("monthlyPoints")) {
+		monthly_points = json["monthlyPoints"];
 	}
 	std::string donatebot_gulid_id{};
 	if (json.contains("donatebot_gulid_id")) {
 		donatebot_gulid_id = json["donatebotgulidid"];
 	}
 	return {
-		.id = json["id"].get_ref <std::string const&>(),
-		.username = json["username"],
-		.discriminator = discriminator,
-		.avatar = avatar,
-		.def_avatar = def_avatar,
-		.lib = json["lib"],
-		.prefix = json["prefix"],
-		.shortdesc = json["shortdesc"],
-		.longdesc = longdesc,
-		.tags = json["tags"],
-		.website = website,
-		.support = support,
-		.github = github,
-		.owners = str_vector_to_snowflake(json["owners"]),
-		.guilds = str_vector_to_snowflake(json["guilds"]),
-		.invite = invite,
-		.date = datetime::parse(json["date"].get_ref <std::string const&>()),
+		.id = id,
+		.username = std::move(username),
+		.discriminator = std::move(discriminator),
+		.avatar = std::move(avatar),
+		.def_avatar = std::move(def_avatar),
+		.lib = std::move(lib),
+		.prefix = std::move(prefix),
+		.shortdesc = std::move(shortdesc),
+		.longdesc = std::move(longdesc),
+		.tags = std::move(tags),
+		.website = std::move(website),
+		.support = std::move(support),
+		.github = std::move(github),
+		.owners = std::move(owners),
+		.guilds = std::move(guilds),
+		.invite = std::move(invite),
+		.date = date,
 		.server_count = server_count,
 		.shard_count = shard_count,
-		.certified_bot = json["certifiedBot"],
-		.vanity = vanity,
-		.points = json["points"],
-		.monthly_points = json["monthlyPoints"],
+		.certified_bot = certified_bot,
+		.vanity = std::move(vanity),
+		.points = points,
+		.monthly_points = monthly_points,
 		.donatebot_guild_id = donatebot_gulid_id,
 	};
-}
-
-dpptgg::v0::vote_t dpptgg::v0::vote_from_json(nlohmann::json const& json) {
-	return {
-		.username = json["username"],
-		.id = json["id"].get_ref <std::string const&>(),
-		.avatar = json["avatar"],
-	};
-}
-
-dpptgg::v0::requested_votes_t dpptgg::v0::votes_from_json(nlohmann::json const& json) {
-	requested_votes_t res;
-	for (nlohmann::json const& x : json) {
-		res.push_back(vote_from_json(x));
-	}
-	return res;
 }
 
 dpptgg::v0::server_count_t dpptgg::v0::server_count_from_json(nlohmann::json const& json) {
@@ -151,69 +183,10 @@ dpptgg::v0::voted_state_t dpptgg::v0::voted_state_from_json(nlohmann::json const
 	return json["voted"] == 1;
 }
 
-dpptgg::v0::user_t dpptgg::v0::user_from_json(nlohmann::json const& json) {
-	std::string avatar{};
-	if (json.contains("avatar")) {
-		avatar = json["avatar"];
-	}
-	std::string bio{};
-	if (json.contains("bio")) {
-		bio = json["bio"];
-	}
-	std::string banner{};
-	if (json.contains("banner")) {
-		banner = json["banner"];
-	}
-	std::string youtube{};
-	if (json["social"].contains("youtube")) {
-		youtube = json["youtube"];
-	}
-	std::string reddit{};
-	if (json["social"].contains("reddit")) {
-		reddit = json["reddit"];
-	}
-	std::string twitter{};
-	if (json["social"].contains("twitter")) {
-		twitter = json["twitter"];
-	}
-	std::string instagram{};
-	if (json["social"].contains("instagram")) {
-		instagram = json["instagram"];
-	}
-	std::string github{};
-	if (json["social"].contains("github")) {
-		github = json["github"];
-	}
-	std::string color{};
-	if (json.contains("color")) {
-		color = json["color"];
-	}
-	return {
-		.id = json["id"].get_ref <std::string const&>(),
-		.username = json["username"],
-		.discriminator = static_cast <uint16_t>(std::stoi(json["discriminator"].get_ref <std::string const&>())),
-		.avatar = avatar,
-		.def_avatar = json["defAvatar"],
-		.bio = bio,
-		.banner = banner,
-		.youtube = youtube,
-		.reddit = reddit,
-		.twitter = twitter,
-		.instagram = instagram,
-		.github = github,
-		.color = color,
-		.supporter = json["supporter"],
-		.certified_dev = json["certifiedDev"],
-		.mod = json["mod"],
-		.web_mod = json["webMod"],
-		.admin = json["admin"],
-	};
-}
-
 void dpptgg::poker::get_bots(v0::completion_event const& topgg_callback, uint16_t const limit, uint64_t const offset, bot_fields const sort_field, std::vector <bot_fields> const& fields) {
 	std::string request_arguments = "limit=" + std::to_string(limit) + "&offset=" + std::to_string(offset);
 	if (sort_field != sf_na) {
-		request_arguments += "&sort_field=" + std::to_string(sort_field);
+		request_arguments += "&sort=" + str_from_sort_field(sort_field);
 	}
 	if (!fields.empty()) {
 		request_arguments += "&fields=";
@@ -236,8 +209,8 @@ void dpptgg::poker::get_bots(v0::completion_event const& topgg_callback, uint16_
 	});
 }
 
-void dpptgg::poker::get_server_count(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id) {
-	this->poker_cluster->request(v0::BASE_API_URL + "bots/" + bot_id.str() + "/stats", dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
+void dpptgg::poker::get_server_count(v0::completion_event const& topgg_callback) {
+	this->poker_cluster->request(v0::BASE_API_URL + "bots/0/stats", dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
 		v0::request_completion_t callback = {
 			.request = std::move(request)
 		};
@@ -251,8 +224,8 @@ void dpptgg::poker::get_server_count(v0::completion_event const& topgg_callback,
 	});
 }
 
-void dpptgg::poker::get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id, dpp::snowflake const user_id) {
-	this->poker_cluster->request(v0::BASE_API_URL + "bots/" + bot_id.str() + "/check?userId=" + user_id.str(), dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
+void dpptgg::poker::get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake const user_id) {
+	this->poker_cluster->request(v0::BASE_API_URL + "bots/0/check?userId=" + user_id.str(), dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
 		v0::request_completion_t callback = {
 			.request = std::move(request)
 		};
@@ -266,8 +239,8 @@ void dpptgg::poker::get_user_vote(v0::completion_event const& topgg_callback, dp
 	});
 }
 
-void dpptgg::poker::post_server_count(v0::completion_event const& topgg_callback, dpp::snowflake const bot_id, uint64_t const server_count) {
-	this->poker_cluster->request(v0::BASE_API_URL + "bots/" + bot_id.str() + "/stats", dpp::m_post, [topgg_callback](dpp::http_request_completion_t const& request) {
+void dpptgg::poker::post_server_count(v0::completion_event const& topgg_callback, uint64_t const server_count) {
+	this->poker_cluster->request(v0::BASE_API_URL + "bots/0/stats", dpp::m_post, [topgg_callback](dpp::http_request_completion_t const& request) {
 		topgg_callback({
 			.request = std::move(request)
 		});
