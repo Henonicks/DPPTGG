@@ -378,7 +378,7 @@ namespace dpptgg {
 		 * @param token_arg The token to use. "Bearer " is attached by the constructor, so simply paste what top.gg shows you.
 		 * @param poker_cluster_arg The cluster to attach the poker to. If left untouched or set to nullptr, a new one will be created.
 		 */
-		explicit poker(std::string_view token_arg, dpp::cluster const* poker_cluster_arg = nullptr);
+		explicit poker(std::string_view token_arg, dpp::cluster* poker_cluster_arg = nullptr);
 
 		poker() = delete;
 		poker(poker const&) = delete;
