@@ -20,6 +20,10 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME} test.cpp)
 
+# Doesn't work on Arch if I don't duplicate FindDPP.cmake (unfortunately I use Arch BTW)
+find_package(DPP MODULE)
+
 find_package(DPPTGG MODULE)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${DPPTGG_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${DPPTGG_LIBRARIES} dpp)
+target_link_libraries(${PROJECT_NAME} ${DPPTGG_LIBRARIES} ${DPP_LIBRARIES})

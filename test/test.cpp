@@ -61,12 +61,17 @@ int main() {
 		std::cout << "get_bots: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 	}, 5, 0);
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 	poker.get_user_vote([](dpptgg::v0::request_completion_t const& callback) {
 		std::cout << "get_user_vote: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 	}, USER_ID);
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 	poker.post_server_count([&poker](dpptgg::v0::request_completion_t const& callback) {
 		std::cout << "post_server_count: " << callback.request.status << '\n';
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		poker.get_server_count([](dpptgg::v0::request_completion_t const& callback) {
 			std::cout << "get_server_count: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 		});
@@ -81,23 +86,39 @@ int main() {
 		.day = static_cast <uint8_t>(std::localtime(&time_t)->tm_mday),
 	};
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 	poker.get_current_project([](dpptgg::v1::request_completion_t const& callback) {
 		std::cout << "get_current_project: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
 	});
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 	poker.get_votes(start_date, [&poker](dpptgg::v1::request_completion_t const& callback) {
-		poker.get_votes(callback.get <dpptgg::v1::requested_votes_t>().cursor, [](dpptgg::v1::request_completion_t const& inner_callback) {
-			std::cout << "get_votes: " << inner_callback.request.status << ' ' << inner_callback.get <dpptgg::v1::requested_votes_t>().cursor << std::endl;
-		});
+		if (!callback.is_error()) {
+			std::string const& cursor = callback.get <dpptgg::v1::requested_votes_t>().cursor;
+			poker.get_votes(cursor, [](dpptgg::v1::request_completion_t const& inner_callback) {
+				std::cout << "get_votes: " << inner_callback.request.status << ' ' << inner_callback.get <dpptgg::v1::requested_votes_t>().cursor << std::endl;
+			});
+		}
+		else {
+			std::cout << "get_votes: " << callback.error.status << std::endl;
+		}
 	});
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 	poker.get_vote_status_by_user(USER_ID, [](dpptgg::v1::request_completion_t const& callback) {
 		std::cout << "get_vote_status_by_user: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
 	}, dpptgg::us_discord);
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 	dpp::slashcommand test("test", "test command", poker.get_cluster()->me.id);
 
 	dpptgg::v1::slashcommand_array commands = {test};
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 	poker.update_discord_bot_commands(commands, [](dpptgg::v1::request_completion_t const& callback) {
 		std::cout << "update_discord_bot_commands: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';

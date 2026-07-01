@@ -30,6 +30,14 @@ dpptgg::poker::poker(std::string_view const token_arg, dpp::cluster* const poker
 	}
 }
 
+dpptgg::v0::request_error_t dpptgg::v0::error_from_json(nlohmann::json const& json) {
+	request_error_t res{};
+	if (json.count("status")) {
+		res.status = json["status"];
+	}
+	return res;
+}
+
 dpptgg::v0::requested_bots_t dpptgg::v0::bots_from_json(nlohmann::json const& json) {
 	requested_bots_t res = {
 		.limit = json["limit"],
@@ -37,6 +45,7 @@ dpptgg::v0::requested_bots_t dpptgg::v0::bots_from_json(nlohmann::json const& js
 		.count = json["count"],
 		.total = json["total"]
 	};
+	res.results.reserve(json["results"].size());
 	for (nlohmann::json const& x : json["results"]) {
 		res.results.push_back(bot_from_json(x));
 	}
@@ -45,6 +54,7 @@ dpptgg::v0::requested_bots_t dpptgg::v0::bots_from_json(nlohmann::json const& js
 
 std::vector <dpp::snowflake> str_vector_to_snowflake(std::vector <std::string> const& vector) {
 	std::vector <dpp::snowflake> res;
+	res.reserve(vector.size());
 	for (std::string const& x : vector) {
 		res.push_back(x);
 	}
@@ -184,72 +194,6 @@ dpptgg::v0::voted_state_t dpptgg::v0::voted_state_from_json(nlohmann::json const
 	return json["voted"] == 1;
 }
 
-void dpptgg::poker::get_bots(v0::completion_event const& topgg_callback, uint16_t const limit, uint64_t const offset, bot_fields const sort_field, std::vector <bot_fields> const& fields) {
-	std::string request_arguments = "limit=" + std::to_string(limit) + "&offset=" + std::to_string(offset);
-	if (sort_field != sf_na) {
-		request_arguments += "&sort=" + str_from_sort_field(sort_field);
-	}
-	if (!fields.empty()) {
-		request_arguments += "&fields=";
-		for (int i = 0; i < fields.size() - 1; i++) {
-			request_arguments += str_from_sort_field(fields[i]) + ',';
-		}
-		request_arguments += str_from_sort_field(fields.back());
-	}
-	this->poker_cluster->request(v0::BASE_API_URL + "bots?" + request_arguments, dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v0::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		if (request.status / 100 == 2) {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			callback.value = v0::bots_from_json(callback.raw_json);
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
-		{"Authorization", this->v0_token.data()}
-	});
-}
-
-void dpptgg::poker::get_server_count(v0::completion_event const& topgg_callback) {
-	this->poker_cluster->request(v0::BASE_API_URL + "bots/0/stats", dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v0::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		if (request.status / 100 == 2) {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			callback.value = v0::server_count_from_json(callback.raw_json);
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
-		{"Authorization", this->v0_token.data()}
-	});
-}
-
-void dpptgg::poker::get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake const user_id) {
-	this->poker_cluster->request(v0::BASE_API_URL + "bots/0/check?userId=" + user_id.str(), dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v0::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		if (request.status / 100 == 2) {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			callback.value = v0::voted_state_from_json(callback.raw_json);
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
-		{"Authorization", this->v0_token.data()}
-	});
-}
-
-void dpptgg::poker::post_server_count(v0::completion_event const& topgg_callback, uint64_t const server_count) {
-	this->poker_cluster->request(v0::BASE_API_URL + "bots/0/stats", dpp::m_post, [topgg_callback](dpp::http_request_completion_t const& request) {
-		topgg_callback({
-			.request = std::move(request)
-		});
-	}, "{\"server_count\":" + std::to_string(server_count) + '}', text_plain, {
-		{"Authorization", this->v0_token.data()}
-	});
-}
-
 dpptgg::v1::request_error_t dpptgg::v1::error_from_json(nlohmann::json const& json) {
 	request_error_t res{};
 	if (json.count("type")) {
@@ -264,17 +208,7 @@ dpptgg::v1::request_error_t dpptgg::v1::error_from_json(nlohmann::json const& js
 	if (json.count("detail")) {
 		res.detail = json["detail"];
 	}
-	if (json.count("errors")) {
-		res.errors = json["errors"];
-	}
-	if (json.count("traceId")) {
-		res.trace_id = json["traceId"];
-	}
 	return res;
-}
-
-bool dpptgg::v1::request_completion_t::is_error() const {
-	return this->error.status;
 }
 
 dpptgg::v1::requested_project_t dpptgg::v1::project_from_json(nlohmann::json const& json) {
@@ -306,6 +240,7 @@ dpptgg::v1::requested_votes_t dpptgg::v1::votes_from_json(nlohmann::json const& 
 	requested_votes_t res = {
 		.cursor = json["cursor"],
 	};
+	res.data.reserve(json["data"].size());
 	if (json.contains("data")) {
 		for (nlohmann::json const& x : json["data"]) {
 			res.data.push_back(vote_from_json(x));
@@ -322,116 +257,72 @@ dpptgg::v1::vote_status_t dpptgg::v1::vote_status_from_json(nlohmann::json const
 	};
 }
 
+bool dpptgg::v1::request_completion_t::is_error() const {
+	return this->error.status;
+}
+
+void dpptgg::poker::get_bots(v0::completion_event const& topgg_callback, uint16_t const limit, uint64_t const offset, bot_fields const sort_field, std::vector <bot_fields> const& fields) {
+	std::string request_arguments = "limit=" + std::to_string(limit) + "&offset=" + std::to_string(offset);
+	if (sort_field != sf_na) {
+		request_arguments += "&sort=" + str_from_sort_field(sort_field);
+	}
+	if (!fields.empty()) {
+		request_arguments += "&fields=";
+		for (int i = 0; i < fields.size() - 1; i++) {
+			request_arguments += str_from_sort_field(fields[i]) + ',';
+		}
+		request_arguments += str_from_sort_field(fields.back());
+	}
+	this->poke <v0::bots_from_json, v0>(v0::BASE_API_URL + "bots?" + request_arguments, dpp::m_get, topgg_callback, {
+		{"Authorization", this->v0_token.data()}
+	});
+}
+
+void dpptgg::poker::get_server_count(v0::completion_event const& topgg_callback) {
+	this->poke <v0::server_count_from_json, v0>(v0::BASE_API_URL + "bots/0/stats", dpp::m_get, topgg_callback, {
+		{"Authorization", this->v0_token.data()}
+	});
+}
+
+void dpptgg::poker::get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake const user_id) {
+	this->poke <v0::voted_state_from_json, v0>(v0::BASE_API_URL + "bots/check?userId=" + user_id.str(), dpp::m_get, topgg_callback, {
+		{"Authorization", this->v0_token.data()}
+	});
+}
+
+void dpptgg::poker::post_server_count(v0::completion_event const& topgg_callback, uint64_t const server_count) {
+	this->poke <no_conversion, v0>(v0::BASE_API_URL + "bots/0/stats", dpp::m_post, topgg_callback, {
+		{"Authorization", this->v0_token.data()}
+	}, "{\"server_count\":" + std::to_string(server_count) + '}');
+}
+
 void dpptgg::poker::get_current_project(v1::completion_event const& topgg_callback) const {
-	this->poker_cluster->request(v1::BASE_API_URL + "projects/@me", dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v1::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		try {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			if (request.status / 100 != 2) {
-				callback.error = v1::error_from_json(callback.raw_json);
-			}
-			else {
-				callback.value = v1::project_from_json(callback.raw_json);
-			}
-		}
-		catch (...) {
-			callback.error.status = request.status;
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
+	this->poke <v1::project_from_json, v1>(v1::BASE_API_URL + "projects/@me", dpp::m_get, topgg_callback, {
 		{"Authorization", this->v1_token}
 	});
 }
 
 void dpptgg::poker::update_discord_bot_commands(v1::slashcommand_array const& commands, v1::completion_event const& topgg_callback) {
-	this->poker_cluster->request(v1::BASE_API_URL + "projects/@me/commands", dpp::m_post, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v1::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		try {
-			if (request.status / 100 != 2) {
-				callback.raw_json = nlohmann::json::parse(request.body);
-				callback.error = v1::error_from_json(callback.raw_json);
-			}
-		}
-		catch (...) {
-			callback.error.status = request.status;
-		}
-		topgg_callback(callback);
-	}, nlohmann::json(commands).dump(), application_json, {
+	this->poke <no_conversion, v1>(v1::BASE_API_URL + "projects/@me/commands", dpp::m_post, topgg_callback, {
 		{"Authorization", this->v1_token}
-	});
-
+	}, nlohmann::json(commands).dump());
 }
 
 void dpptgg::poker::get_votes(std::string_view const cursor, v1::completion_event const& topgg_callback) const {
-	this->poker_cluster->request(v1::BASE_API_URL + "projects/@me/votes?cursor=" + cursor.data(), dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v1::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		try {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			if (request.status / 100 != 2) {
-				callback.error = v1::error_from_json(callback.raw_json);
-			}
-			else {
-				callback.value = v1::votes_from_json(callback.raw_json);
-			}
-		}
-		catch (...) {
-			callback.error.status = request.status;
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
+	this->poke <v1::votes_from_json, v1>(v1::BASE_API_URL + "projects/@me/votes?cursor=" + cursor.data(), dpp::m_get, topgg_callback, {
 		{"Authorization", this->v1_token}
 	});
 }
 
 void dpptgg::poker::get_votes(datetime const& start_date, v1::completion_event const& topgg_callback) const {
-	this->poker_cluster->request(v1::BASE_API_URL + "projects/@me/votes?startDate=" + start_date.get_timestamp(), dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v1::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		try {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			if (request.status / 100 != 2) {
-				callback.error = v1::error_from_json(callback.raw_json);
-			}
-			else {
-				callback.value = v1::votes_from_json(callback.raw_json);
-			}
-		}
-		catch (...) {
-			callback.error.status = request.status;
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
+	this->poke <v1::votes_from_json, v1>(v1::BASE_API_URL + "projects/@me/votes?startDate=" + start_date.get_timestamp(), dpp::m_get, topgg_callback, {
 		{"Authorization", this->v1_token}
 	});
 }
 
 void dpptgg::poker::get_vote_status_by_user(dpp::snowflake const user_id, v1::completion_event const& topgg_callback, user_sources const user_source) const {
-	this->poker_cluster->request(v1::BASE_API_URL + "projects/@me/votes/" + user_id.str() + "?source=" + str_from_user_source(user_source), dpp::m_get, [topgg_callback](dpp::http_request_completion_t const& request) {
-		v1::request_completion_t callback = {
-			.request = std::move(request)
-		};
-		try {
-			callback.raw_json = nlohmann::json::parse(request.body);
-			if (request.status / 100 != 2) {
-				callback.error = v1::error_from_json(callback.raw_json);
-			}
-			else {
-				callback.value = v1::vote_status_from_json(callback.raw_json);
-			}
-		}
-		catch (...) {
-			callback.error.status = request.status;
-		}
-		topgg_callback(callback);
-	}, "", text_plain, {
-		{"Authorization", this->v1_token},
+	this->poke <v1::vote_status_from_json, v1>(v1::BASE_API_URL + "projects/@me/votes/" + user_id.str() + "?source=" + str_from_user_source(user_source), dpp::m_get, topgg_callback, {
+		{"Authorization", this->v1_token}
 	});
 }
 
