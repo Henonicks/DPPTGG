@@ -26,9 +26,23 @@ namespace dpptgg {
 
 	inline char constexpr text_plain[] = "text/plain";
 	inline char constexpr application_json[] = "application/json";
+	constexpr auto no_conversion = nullptr;
 
-	namespace v0 {
-		inline std::string const BASE_API_URL = "https://top.gg/api/";
+	struct v0 {
+		inline static std::string const BASE_API_URL = "https://top.gg/api/";
+
+		struct request_error_t {
+
+			// The HTTP status code.
+			uint16_t status{};
+		};
+
+		/**
+		 * @brief Convert a JSON to a topgg_request_error_t object.
+		 * @param json The JSON to get the error from.
+		 * @return A topgg_request_error_t object with the JSON's fields.
+		 */
+		static request_error_t error_from_json(nlohmann::json const& json);
 
 		struct bot_t {
 
@@ -110,7 +124,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the bot from.
 		 * @return A bot_t object with the JSON's fields.
 		 */
-		bot_t bot_from_json(nlohmann::json const& json);
+		static bot_t bot_from_json(nlohmann::json const& json);
 
 		struct requested_bots_t {
 
@@ -135,7 +149,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the bots from.
 		 * @return A requested_bots_t object with the JSON's fields.
 		 */
-		requested_bots_t bots_from_json(nlohmann::json const& json);
+		static requested_bots_t bots_from_json(nlohmann::json const& json);
 
 		struct vote_t {
 
@@ -151,11 +165,11 @@ namespace dpptgg {
 
 		using server_count_t = uint64_t;
 
-		server_count_t server_count_from_json(nlohmann::json const& json);
+		static server_count_t server_count_from_json(nlohmann::json const& json);
 
 		using voted_state_t = bool;
 
-		voted_state_t voted_state_from_json(nlohmann::json const& json);
+		static voted_state_t voted_state_from_json(nlohmann::json const& json);
 
 		using callback_data_t = std::variant <std::monostate, requested_bots_t, server_count_t, voted_state_t>;
 
@@ -163,6 +177,9 @@ namespace dpptgg {
 
 			// An std::variant with the underlying value. Holds std::monostate if top.gg returned an error.
 			callback_data_t value{};
+
+			// An error object which contains the HTTP status.
+			request_error_t error{};
 
 			// The raw JSON object returned from top.gg. Empty if the response is an error.
 			nlohmann::json raw_json{};
@@ -188,31 +205,24 @@ namespace dpptgg {
 		};
 
 		using completion_event = std::function <void(request_completion_t const&)>;
+	};
 
-	}
-
-	namespace v1 {
-		inline std::string const BASE_API_URL = "https://top.gg/api/v1/";
+	struct v1 {
+		inline static std::string const BASE_API_URL = "https://top.gg/api/v1/";
 
 		struct request_error_t {
 
-			// Type.
+			// A URI identifying the error type.
 			std::string type{};
 
-			// Title.
+			// A short human-readable error message.
 			std::string title{};
 
-			// Status.
+			// The HTTP status code.
 			uint16_t status{};
 
-			// Detail.
+			// A human-readable detailed error message.
 			std::string detail{};
-
-			// Errors.
-			nlohmann::json errors{};
-
-			// Trace ID.
-			std::string trace_id{};
 		};
 
 		/**
@@ -220,7 +230,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the error from.
 		 * @return A topgg_request_error_t object with the JSON's fields.
 		 */
-		request_error_t error_from_json(nlohmann::json const& json);
+		static request_error_t error_from_json(nlohmann::json const& json);
 
 		struct requested_project_t {
 
@@ -260,7 +270,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the project from.
 		 * @return A requested_project_t object with the JSON's fields.
 		 */
-		requested_project_t project_from_json(nlohmann::json const& json);
+		static requested_project_t project_from_json(nlohmann::json const& json);
 
 		struct vote_t {
 
@@ -285,7 +295,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the vote from.
 		 * @return A vote_t object with the JSON's fields.
 		 */
-		vote_t vote_from_json(nlohmann::json const& json);
+		static vote_t vote_from_json(nlohmann::json const& json);
 
 		struct requested_votes_t {
 
@@ -301,7 +311,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the votes from.
 		 * @return A requested_votes_t object with the JSON's fields.
 		 */
-		requested_votes_t votes_from_json(nlohmann::json const& json);
+		static requested_votes_t votes_from_json(nlohmann::json const& json);
 
 		struct vote_status_t {
 
@@ -320,7 +330,7 @@ namespace dpptgg {
 		 * @param json The JSON to get the vote status from.
 		 * @return A vote_status_t object with the JSON's fields.
 		 */
-		vote_status_t vote_status_from_json(nlohmann::json const& json);
+		static vote_status_t vote_status_from_json(nlohmann::json const& json);
 
 		using callback_data_t = std::variant <std::monostate, requested_project_t, requested_votes_t, vote_status_t>;
 
@@ -357,7 +367,7 @@ namespace dpptgg {
 
 		using completion_event = std::function <void(request_completion_t const&)>;
 		using slashcommand_array = std::vector <dpp::slashcommand>;
-	}
+	};
 
 	class poker {
 
@@ -383,6 +393,33 @@ namespace dpptgg {
 		poker() = delete;
 		poker(poker const&) = delete;
 		poker(poker&&) = delete;
+
+		template <auto conversion_rule, typename api_version>
+		void poke(std::string_view const path, dpp::http_method const method, typename api_version::completion_event const& topgg_callback, std::multimap <std::string, std::string> const& headers, std::string_view const post_data = "") const {
+			std::string path_cp = path.data();
+			this->poker_cluster->request(path.data(), method, [path_cp, topgg_callback](dpp::http_request_completion_t const& request){
+				typename api_version::request_completion_t callback = {
+					.request = request
+				};
+				try {
+					callback.raw_json = nlohmann::json::parse(request.body);
+					if (request.status / 100 != 2) {
+						callback.error = api_version::error_from_json(callback.raw_json);
+					}
+					else {
+						if constexpr (conversion_rule != no_conversion) {
+							callback.value = conversion_rule(callback.raw_json);
+						}
+					}
+				}
+				catch (...) {
+					if (request.status / 100 != 2) {
+						callback.error.status = request.status;
+					}
+				}
+				topgg_callback(callback);
+			}, post_data.data(), application_json, headers);
+		}
 
 		/**
 		 * @brief Get a list of bots like the one you get by visiting the index top.gg page.

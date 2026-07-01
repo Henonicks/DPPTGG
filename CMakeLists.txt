@@ -41,7 +41,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${OPENSSL_INCLUDE_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
     ${DL_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_CRYPTO_LIBRARY}
@@ -49,7 +49,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 if (DPP_FOUND)
-    target_link_libraries(${PROJECT_NAME} ${DPP_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${DPP_LIBRARIES})
     target_include_directories(${PROJECT_NAME} PUBLIC ${DPP_INCLUDE_DIR})
 else()
     find_package(Git)
