@@ -110,6 +110,14 @@ namespace dpptgg {
 
 	std::string str_from_sort_field(bot_fields sort_field);
 
+	enum announcement_categories : uint8_t {
+		ac_announcement,
+		ac_event,
+		ac_new_feature,
+	};
+
+	std::string str_from_announcement_category(announcement_categories category);
+
 	/**
 	 * @brief Generates an HMAC SHA256 digest, used to verify the identity of the request sender as top.gg.
 	 * @param key Key.
