@@ -311,59 +311,59 @@ void dpptgg::poker::update_current_project(v1::headline_map_t const& headline, v
 	this->poke <no_conversion, v1>("projects/@me", dpp::m_patch, topgg_callback, request_body.dump());
 }
 
-void dpptgg::poker::create_announcement(std::string_view title, std::string_view content, announcement_categories const category, v1::completion_event const& topgg_callback) const {
-	nlohmann::json request_body{};
-	request_body["title"] = title;
-	request_body["content"] = content;
-	request_body["category"] = str_from_announcement_category(category);
-	this->poke <v1::announcement_from_json, v1>("projects/@me/announcements", dpp::m_post, topgg_callback, request_body.dump());
-}
+// void dpptgg::poker::create_announcement(std::string_view title, std::string_view content, announcement_categories const category, v1::completion_event const& topgg_callback) const {
+// 	nlohmann::json request_body{};
+// 	request_body["title"] = title;
+// 	request_body["content"] = content;
+// 	request_body["category"] = str_from_announcement_category(category);
+// 	this->poke <v1::announcement_from_json, v1>("projects/@me/announcements", dpp::m_post, topgg_callback, request_body.dump());
+// }
 
-void dpptgg::poker::update_project_metrics(v1::bot_metrics_t const& metrics, v1::completion_event const& topgg_callback) const {
-	nlohmann::json request_body{};
-	request_body["server_count"] = metrics.server_count;
-	request_body["shard_count"] = metrics.shard_count;
-	this->poke <no_conversion, v1>("projects/@me/metrics", dpp::m_patch, topgg_callback, request_body.dump());
-}
-
-void dpptgg::poker::update_project_metrics(v1::server_metrics_t const& metrics, v1::completion_event const& topgg_callback) const {
-	nlohmann::json request_body{};
-	request_body["member_count"] = metrics.member_count;
-	request_body["online_count"] = metrics.online_count;
-	this->poke <no_conversion, v1>("projects/@me/metrics", dpp::m_patch, topgg_callback, request_body.dump());
-}
-
-void dpptgg::poker::update_project_metrics_batch(v1::bot_metrics_batch_t const& data, v1::completion_event const& topgg_callback) const {
-	nlohmann::json request_body{};
-	request_body["data"] = nlohmann::json::array();
-	for (v1::timestamped_bot_metrics_t const& x : data) {
-		request_body["data"].emplace_back(nlohmann::json::object());
-		request_body["data"].back() = {
-			{"timestamp", x.timestamp.get_timestamp()},
-			{"metrics", {
-				{"server_count", x.metrics.server_count},
-				{"shard_count", x.metrics.shard_count},
-			}}
-		};
-	}
-	this->poke <no_conversion, v1>("projects/@me/metrics/batch", dpp::m_post, topgg_callback, request_body.dump());
-}
-
-void dpptgg::poker::update_project_metrics_batch(v1::server_metrics_batch_t const& data, v1::completion_event const& topgg_callback) const {
-	nlohmann::json request_body{};
-	request_body["data"] = nlohmann::json::array();
-	for (v1::timestamped_server_metrics_t const& x : data) {
-		request_body["data"].emplace_back(nlohmann::json::object());
-		request_body["data"].back() = {
-			{"timestamp", x.timestamp.get_timestamp()},
-			{"metrics", {
-				{"member_count", x.metrics.member_count},
-				{"online_count", x.metrics.online_count},
-			}}
-		};
-	}
-	this->poke <no_conversion, v1>("projects/@me/metrics/batch", dpp::m_post, topgg_callback, request_body.dump());
-}
+// void dpptgg::poker::update_project_metrics(v1::bot_metrics_t const& metrics, v1::completion_event const& topgg_callback) const {
+// 	nlohmann::json request_body{};
+// 	request_body["server_count"] = metrics.server_count;
+// 	request_body["shard_count"] = metrics.shard_count;
+// 	this->poke <no_conversion, v1>("projects/@me/metrics", dpp::m_patch, topgg_callback, request_body.dump());
+// }
+//
+// void dpptgg::poker::update_project_metrics(v1::server_metrics_t const& metrics, v1::completion_event const& topgg_callback) const {
+// 	nlohmann::json request_body{};
+// 	request_body["member_count"] = metrics.member_count;
+// 	request_body["online_count"] = metrics.online_count;
+// 	this->poke <no_conversion, v1>("projects/@me/metrics", dpp::m_patch, topgg_callback, request_body.dump());
+// }
+//
+// void dpptgg::poker::update_project_metrics_batch(v1::bot_metrics_batch_t const& data, v1::completion_event const& topgg_callback) const {
+// 	nlohmann::json request_body{};
+// 	request_body["data"] = nlohmann::json::array();
+// 	for (v1::timestamped_bot_metrics_t const& x : data) {
+// 		request_body["data"].emplace_back(nlohmann::json::object());
+// 		request_body["data"].back() = {
+// 			{"timestamp", x.timestamp.get_timestamp()},
+// 			{"metrics", {
+// 				{"server_count", x.metrics.server_count},
+// 				{"shard_count", x.metrics.shard_count},
+// 			}}
+// 		};
+// 	}
+// 	this->poke <no_conversion, v1>("projects/@me/metrics/batch", dpp::m_post, topgg_callback, request_body.dump());
+// }
+//
+// void dpptgg::poker::update_project_metrics_batch(v1::server_metrics_batch_t const& data, v1::completion_event const& topgg_callback) const {
+// 	nlohmann::json request_body{};
+// 	request_body["data"] = nlohmann::json::array();
+// 	for (v1::timestamped_server_metrics_t const& x : data) {
+// 		request_body["data"].emplace_back(nlohmann::json::object());
+// 		request_body["data"].back() = {
+// 			{"timestamp", x.timestamp.get_timestamp()},
+// 			{"metrics", {
+// 				{"member_count", x.metrics.member_count},
+// 				{"online_count", x.metrics.online_count},
+// 			}}
+// 		};
+// 	}
+// 	this->poke <no_conversion, v1>("projects/@me/metrics/batch", dpp::m_post, topgg_callback, request_body.dump());
+// }
 
 void dpptgg::poker::update_discord_bot_commands(v1::slashcommand_array const& commands, v1::completion_event const& topgg_callback) const {
 	this->poke <no_conversion, v1>("projects/@me/commands", dpp::m_post, topgg_callback, nlohmann::json(commands).dump());

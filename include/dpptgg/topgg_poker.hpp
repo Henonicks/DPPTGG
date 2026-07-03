@@ -536,7 +536,7 @@ namespace dpptgg {
 		void get_current_project(v1::completion_event const& topgg_callback = {}) const;
 
 		/**
-		 * @brief Updates the current project's headline and/or content, supporting translations. Each argument map can be empty to leave the respective value untouched.
+		 * @brief Update the current project's headline and/or content, supporting translations. Each argument map can be empty to leave the respective value untouched.
 		 * @param headline The headline to set, supports translations, hence the keying by locales. Example headline translation: {"en", "English headline"}. 3-140 characters allowed.
 		 * @param page_content The page content to set, supports translation, hence the keying by locales. Example content translation: {"en", "English content"}. 300-50'000 characters allowed.
 		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
@@ -544,14 +544,13 @@ namespace dpptgg {
 		void update_current_project(v1::headline_map_t const& headline, v1::content_map_t const& page_content, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
-		 * @brief Creates an announcement for your project.
+		 * @brief Create an announcement for your project.
 		 * @param title The title of the announcement, 3-100 characters allowed.
 		 * @param content The announcement content, 10-2'000 characters allowed.
 		 * @param category The announcement category, ac_announcement if omitted.
 		 * @param topgg_callback The function to call when a response is received. value has dpptgg::v1::announcement_t as the underlying type upon success, holds std::monostate otherwise.
-		 * @deprecated Seems to always respond with status code 500? Looking into it.
 		 */
-		[[deprecated]] void create_announcement(std::string_view title, std::string_view content, announcement_categories category = ac_announcement, v1::completion_event const& topgg_callback = {}) const;
+		// void create_announcement(std::string_view title, std::string_view content, announcement_categories category = ac_announcement, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
 		 * @brief Update your project's metrics. Use this overload if your project is a Discord bot.
@@ -559,7 +558,7 @@ namespace dpptgg {
 		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
 		 * @deprecated Doesn't appear to be functional. Looking into it.
 		 */
-		[[deprecated]] void update_project_metrics(v1::bot_metrics_t const& metrics, v1::completion_event const& topgg_callback = {}) const;
+		// [[deprecated]] void update_project_metrics(v1::bot_metrics_t const& metrics, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
 		 * @brief Update your project's metrics. Use this overload if your project is a Discord server.
@@ -567,7 +566,7 @@ namespace dpptgg {
 		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
 		 * @deprecated Doesn't appear to be functional. Looking into it.
 		 */
-		[[deprecated]] void update_project_metrics(v1::server_metrics_t const& metrics, v1::completion_event const& topgg_callback = {}) const;
+		// [[deprecated]] void update_project_metrics(v1::server_metrics_t const& metrics, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
 		 * @brief Update your project's metrics by submitting a batch of them. Use this overload if your project is a Discord bot.
@@ -575,7 +574,7 @@ namespace dpptgg {
 		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
 		 * @deprecated Doesn't appear to be functional. Looking into it.
 		 */
-		[[deprecated]] void update_project_metrics_batch(v1::bot_metrics_batch_t const& data, v1::completion_event const& topgg_callback = {}) const;
+		// [[deprecated]] void update_project_metrics_batch(v1::bot_metrics_batch_t const& data, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
 		 * @brief Update your project's metrics by submitting a batch of them. Use this overload if your project is a Discord server.
@@ -583,7 +582,9 @@ namespace dpptgg {
 		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
 		 * @deprecated Doesn't appear to be functional. Looking into it.
 		 */
-		[[deprecated]] void update_project_metrics_batch(v1::server_metrics_batch_t const& data, v1::completion_event const& topgg_callback = {}) const;
+		// [[deprecated]] void update_project_metrics_batch(v1::server_metrics_batch_t const& data, v1::completion_event const& topgg_callback = {}) const;
+
+		/// DYSFUNCTIONAL ENDPOINTS AREN'T INCLUDED
 
 		/**
 		 * @brief Update the commands for the current project, assuming it's a bot.

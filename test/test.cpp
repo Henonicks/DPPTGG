@@ -73,13 +73,13 @@ int main() {
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-	// poker.post_server_count([&poker](dpptgg::v0::request_completion_t const& callback) {
-	// 	std::cout << "post_server_count: " << callback.request.status << '\n';
-	// 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	// 	poker.get_server_count([](dpptgg::v0::request_completion_t const& callback) {
-	// 		std::cout << "get_server_count: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
-	// 	});
-	// }, 2);
+	poker.post_server_count([&poker](dpptgg::v0::request_completion_t const& callback) {
+		std::cout << "post_server_count: " << callback.request.status << '\n';
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		poker.get_server_count([](dpptgg::v0::request_completion_t const& callback) {
+			std::cout << "get_server_count: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
+		});
+	}, 2);
 
 	/// ---------- V1
 
@@ -107,33 +107,33 @@ int main() {
 		std::cout << "update_current_project: " << callback.request.status << ' ' << callback.request.body.substr(0, 300) << std::endl;
 	});
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-	poker.create_announcement("DPPTGG announcement", "DPPTGG announcement content", dpptgg::ac_announcement, [](dpptgg::v1::request_completion_t const& callback) {
-		std::cout << "create_announcement: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
-	});
-
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-	dpptgg::v1::bot_metrics_t bot_metrics = {
-		.server_count = 420691337,
-		.shard_count = 52,
-	};
-	poker.update_project_metrics(bot_metrics, [](dpptgg::v1::request_completion_t const& callback) {
-		std::cout << "update_project_metrics: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
-	});
-
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-	dpptgg::v1::bot_metrics_batch_t metrics_batch = {
-		{
-			.timestamp = start_date,
-			.metrics = bot_metrics
-		}
-	};
-	poker.update_project_metrics_batch(metrics_batch, [](dpptgg::v1::request_completion_t const& callback) {
-		std::cout << "update_project_metrics_batch: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
-	});
+	// std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	//
+	// poker.create_announcement("DPPTGG announcement", "DPPTGG announcement content", dpptgg::ac_announcement, [](dpptgg::v1::request_completion_t const& callback) {
+	// 	std::cout << "create_announcement: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
+	// });
+	//
+	// std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	//
+	// dpptgg::v1::bot_metrics_t bot_metrics = {
+	// 	.server_count = 420691337,
+	// 	.shard_count = 52,
+	// };
+	// poker.update_project_metrics(bot_metrics, [](dpptgg::v1::request_completion_t const& callback) {
+	// 	std::cout << "update_project_metrics: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
+	// });
+	//
+	// std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	//
+	// dpptgg::v1::bot_metrics_batch_t metrics_batch = {
+	// 	{
+	// 		.timestamp = start_date,
+	// 		.metrics = bot_metrics
+	// 	}
+	// };
+	// poker.update_project_metrics_batch(metrics_batch, [](dpptgg::v1::request_completion_t const& callback) {
+	// 	std::cout << "update_project_metrics_batch: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << std::endl;
+	// });
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
