@@ -272,6 +272,63 @@ namespace dpptgg {
 		 */
 		static requested_project_t project_from_json(nlohmann::json const& json);
 
+		// An unordered map keyed by locale strings.
+		using headline_map_t = std::unordered_map <std::string, std::string>;
+
+		// An unordered map keyed by locale strings.
+		using content_map_t = std::unordered_map <std::string, std::string>;
+
+		struct announcement_t {
+			// The title of the announcement.
+			std::string title{};
+
+			// The announcement content.
+			std::string content{};
+
+			// The timestamp of when the announcement was created.
+			datetime created_at{};
+		};
+
+		/**
+		 * @brief Convert a JSON to a requested_project_t object.
+		 * @param json The JSON to get the announcement from.
+		 * @return An announcement_t object with the JSON's fields.
+		 */
+		static announcement_t announcement_from_json(nlohmann::json const& json);
+
+		using server_count_t = uint64_t;
+		using shard_count_t = int;
+
+		using member_count_t = uint64_t;
+		using online_count_t = uint64_t;
+
+		// Discord bot metrics struct
+		struct bot_metrics_t {
+			server_count_t server_count{};
+			shard_count_t shard_count{};
+		};
+
+		// Discord server metrics struct
+		struct server_metrics_t {
+			member_count_t member_count{};
+			online_count_t online_count{};
+		};
+
+		// Roblox isn't (at least currently) supported.
+
+		struct timestamped_bot_metrics_t {
+			datetime timestamp{};
+			bot_metrics_t metrics{};
+		};
+
+		struct timestamped_server_metrics_t {
+			datetime timestamp{};
+			server_metrics_t metrics{};
+		};
+
+		using bot_metrics_batch_t = std::vector <timestamped_bot_metrics_t>;
+		using server_metrics_batch_t = std::vector <timestamped_server_metrics_t>;
+
 		struct vote_t {
 
 			// The ID of the user who voted on top.gg (NOT Discord!).
@@ -332,7 +389,7 @@ namespace dpptgg {
 		 */
 		static vote_status_t vote_status_from_json(nlohmann::json const& json);
 
-		using callback_data_t = std::variant <std::monostate, requested_project_t, requested_votes_t, vote_status_t>;
+		using callback_data_t = std::variant <std::monostate, requested_project_t, announcement_t, requested_votes_t, vote_status_t>;
 
 		struct request_completion_t {
 
@@ -394,10 +451,23 @@ namespace dpptgg {
 		poker(poker const&) = delete;
 		poker(poker&&) = delete;
 
+		template <typename api_version>
+		std::string_view get_token() const {
+			if constexpr (std::is_same_v <api_version, v0>) {
+				return this->v0_token;
+			}
+			else if constexpr (std::is_same_v <api_version, v1>) {
+				return this->v1_token;
+			}
+			else {
+				static_assert(false, "This API version doesn't exist or the type used isn't defined in the dpptgg namespace.");
+				return "";
+			}
+		}
+
 		template <auto conversion_rule, typename api_version>
-		void poke(std::string_view const path, dpp::http_method const method, typename api_version::completion_event const& topgg_callback, std::multimap <std::string, std::string> const& headers, std::string_view const post_data = "") const {
-			std::string path_cp = path.data();
-			this->poker_cluster->request(path.data(), method, [path_cp, topgg_callback](dpp::http_request_completion_t const& request){
+		void poke(std::string_view const path, dpp::http_method const method, typename api_version::completion_event const& topgg_callback, std::string_view const post_data = "") const {
+			this->poker_cluster->request(api_version::BASE_API_URL + path.data(), method, [topgg_callback](dpp::http_request_completion_t const& request){
 				typename api_version::request_completion_t callback = {
 					.request = request
 				};
@@ -418,8 +488,12 @@ namespace dpptgg {
 					}
 				}
 				topgg_callback(callback);
-			}, post_data.data(), application_json, headers);
+			}, post_data.data(), application_json, {
+				{"Authorization", this->get_token <api_version>().data()},
+			});
 		}
+
+		/// ---------- V0
 
 		/**
 		 * @brief Get a list of bots like the one you get by visiting the index top.gg page.
@@ -430,48 +504,101 @@ namespace dpptgg {
 		 * @param fields (Doesn't seem to be functional) The fields to show and fill in.
 		 */
 		void get_bots(v0::completion_event const& topgg_callback,
-			uint16_t limit = 50, uint64_t offset = 0, bot_fields sort_field = sf_na, std::vector <bot_fields> const& fields = {});
+			uint16_t limit = 50, uint64_t offset = 0, bot_fields sort_field = sf_na, std::vector <bot_fields> const& fields = {}) const;
 
 		/**
 		 * @brief Get the amount of servers the bot is in.
 		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::server_count_t as the underlying type upon success, holds std::monostate otherwise.
 		 */
-		void get_server_count(v0::completion_event const& topgg_callback);
+		void get_server_count(v0::completion_event const& topgg_callback) const;
 
 		/**
 		 * @brief Get the vote status of a user (whether they have voted within the last 12 hours or not).
 		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::vote_status_t as the underlying type upon success, holds std::monostate otherwise.
 		 * @param user_id The Discord user ID of the user to get the vote status of.
-		 * @deprecated This only tells you whether the user is unable to vote or not. Use get_vote_status_by_user instead.
+		 * @deprecated v0 function. This only tells you whether the user is unable to vote or not. Use get_vote_status_by_user instead.
 		 */
-		[[deprecated]] void get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake user_id);
+		[[deprecated]] void get_user_vote(v0::completion_event const& topgg_callback, dpp::snowflake user_id) const;
 
 		/**
 		 * @brief Post a number to have top.gg display as your bot's server count.
 		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v0::server_count_t as the underlying type upon success, holds std::monostate otherwise.
 		 * @param server_count The amount of servers to tell top.gg your bot is in.
 		 */
-		void post_server_count(v0::completion_event const& topgg_callback, uint64_t server_count);
+		void post_server_count(v0::completion_event const& topgg_callback, uint64_t server_count) const;
+
+		/// ---------- V1
 
 		/**
 		 * @brief Get stats of the current project from top.gg.
 		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v1::requested_project_t as the underlying type upon success, holds std::monostate otherwise.
 		 */
-		void get_current_project(v1::completion_event const& topgg_callback) const;
+		void get_current_project(v1::completion_event const& topgg_callback = {}) const;
+
+		/**
+		 * @brief Update the current project's headline and/or content, supporting translations. Each argument map can be empty to leave the respective value untouched.
+		 * @param headline The headline to set, supports translations, hence the keying by locales. Example headline translation: {"en", "English headline"}. 3-140 characters allowed.
+		 * @param page_content The page content to set, supports translation, hence the keying by locales. Example content translation: {"en", "English content"}. 300-50'000 characters allowed.
+		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
+		 */
+		void update_current_project(v1::headline_map_t const& headline, v1::content_map_t const& page_content, v1::completion_event const& topgg_callback = {}) const;
+
+		/**
+		 * @brief Create an announcement for your project.
+		 * @param title The title of the announcement, 3-100 characters allowed.
+		 * @param content The announcement content, 10-2'000 characters allowed.
+		 * @param category The announcement category, ac_announcement if omitted.
+		 * @param topgg_callback The function to call when a response is received. value has dpptgg::v1::announcement_t as the underlying type upon success, holds std::monostate otherwise.
+		 */
+		// void create_announcement(std::string_view title, std::string_view content, announcement_categories category = ac_announcement, v1::completion_event const& topgg_callback = {}) const;
+
+		/**
+		 * @brief Update your project's metrics. Use this overload if your project is a Discord bot.
+		 * @param metrics The bot's metrics - its server and shard count. Unedited values default to 0.
+		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
+		 * @deprecated Doesn't appear to be functional. Looking into it.
+		 */
+		// [[deprecated]] void update_project_metrics(v1::bot_metrics_t const& metrics, v1::completion_event const& topgg_callback = {}) const;
+
+		/**
+		 * @brief Update your project's metrics. Use this overload if your project is a Discord server.
+		 * @param metrics The server's metrics - its total and currently online member count. Unedited values default to 0.
+		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
+		 * @deprecated Doesn't appear to be functional. Looking into it.
+		 */
+		// [[deprecated]] void update_project_metrics(v1::server_metrics_t const& metrics, v1::completion_event const& topgg_callback = {}) const;
+
+		/**
+		 * @brief Update your project's metrics by submitting a batch of them. Use this overload if your project is a Discord bot.
+		 * @param data The batch of metrics entries. 1-100 entries allowed.
+		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
+		 * @deprecated Doesn't appear to be functional. Looking into it.
+		 */
+		// [[deprecated]] void update_project_metrics_batch(v1::bot_metrics_batch_t const& data, v1::completion_event const& topgg_callback = {}) const;
+
+		/**
+		 * @brief Update your project's metrics by submitting a batch of them. Use this overload if your project is a Discord server.
+		 * @param data The batch of metrics entries. 1-100 entries allowed.
+		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
+		 * @deprecated Doesn't appear to be functional. Looking into it.
+		 */
+		// [[deprecated]] void update_project_metrics_batch(v1::server_metrics_batch_t const& data, v1::completion_event const& topgg_callback = {}) const;
+
+		/// DYSFUNCTIONAL ENDPOINTS AREN'T INCLUDED
 
 		/**
 		 * @brief Update the commands for the current project, assuming it's a bot.
 		 * @param commands An std::vector with the bot's slash commands (dpp::slashcommand objects).
-		 * @param topgg_callback The callback to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
+		 * @param topgg_callback The function to call when a response is received. value always holds std::monostate as top.gg returns 204 (No Content) as a successful response on this endpoint.
 		 */
-		void update_discord_bot_commands(v1::slashcommand_array const& commands, v1::completion_event const& topgg_callback);
+		void update_discord_bot_commands(v1::slashcommand_array const& commands, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
 		 * @brief Get votes of the current project via a pagination cursor.
 		 * @param cursor The pagination cursor.
 		 * @param topgg_callback The function to call when a response is received. value has dpptgg::v1::requested_votes_t as the underlying type upon success, holds std::monostate otherwise.
 		 */
-		void get_votes(std::string_view cursor, v1::completion_event const& topgg_callback) const;
+		void get_votes(std::string_view cursor, v1::completion_event const& topgg_callback = {}) const;
 
 		/**
 		 * @brief Get votes of the current project since the specified date.
@@ -486,7 +613,9 @@ namespace dpptgg {
 		 * @param topgg_callback The callback to call when a response is received. value has dpptgg::v1::vote_status_t as the underlying type upon success, holds std::monostate otherwise.
 		 * @param user_source The source this user ID came from. top.gg by default (therefore the top.gg ID is to be used, not the Discord one! Unless you explicitly set it to us_discord).
 		 */
-		void get_vote_status_by_user(dpp::snowflake user_id, v1::completion_event const& topgg_callback, user_sources user_source = us_topgg) const;
+		void get_vote_status_by_user(dpp::snowflake user_id, v1::completion_event const& topgg_callback = {}, user_sources user_source = us_topgg) const;
+
+		/// ---------- misc or something
 
 		/**
 		 * @brief Get a pointer to the underlying cluster.
