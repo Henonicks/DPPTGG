@@ -79,7 +79,7 @@ int main() {
 		poker.get_server_count([](dpptgg::v0::request_completion_t const& callback) {
 			std::cout << "get_server_count: " << callback.request.status << ' ' << callback.request.body.substr(0, 100) << '\n';
 		});
-	}, 2);
+	}, 420691337);
 
 	/// ---------- V1
 
@@ -101,7 +101,7 @@ int main() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
 	dpptgg::v1::headline_map_t headline_map = {
-		{"en", "DPPTGG headline"}
+		{"uk", "DPPTGG headline"}
 	};
 	poker.update_current_project(headline_map, {}, [](dpptgg::v1::request_completion_t const& callback) {
 		std::cout << "update_current_project: " << callback.request.status << ' ' << callback.request.body.substr(0, 300) << std::endl;
