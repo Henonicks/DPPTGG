@@ -109,8 +109,9 @@ int main() {
 }
 ```
 
-Of course, running a client separately from a cluster is possible. The library will use a cluster but if you don't have a cluster of your own, one will be provided for you. In fact, you don't even need any Discord-specific functionality at all! This is perfect for those who need to listen for votes and/or update information about their project(s) alongside a D++ bot as this library doesn't require any additional dependencies. Speaking of...
+Of course, running a client separately from a cluster is possible. The library will use a cluster but if you don't have one of your own, one will be provided for you. In fact, you don't even need any Discord-specific functionality at all! This is perfect for those who need to listen for votes and/or update information about their project(s) alongside a D++ bot as this library doesn't require any additional dependencies. Speaking of...
 
 ### Dependencies/prerequisites
 
-* [D++](https://github.com/brainboxdotcc/DPP) 10.1.5+ (Not released as of me writing this but the current `dev` branch will suffice) and its prerequisites
+* [D++](https://github.com/brainboxdotcc/DPP) 10.1.5+ (seems to have been unstable from experience, 10.1.6 is recommended) and its prerequisites
+* A C++17-capable compiler
